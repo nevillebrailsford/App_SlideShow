@@ -3,8 +3,6 @@ package applications.slideshow;
 import java.io.File;
 import java.util.Vector;
 
-import javax.swing.SwingUtilities;
-
 import application.animation.GApplication;
 import application.animation.GImage;
 
@@ -14,14 +12,10 @@ public class SlideShow extends GApplication {
 	static final float HEIGHT = 682;
 	Vector<String> files = null;
 	int filesIndex = 0;
+	File[] directories;
 
-	public SlideShow() {
-	}
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> {
-			new SlideShow();
-		});
+	public SlideShow(File[] directories) {
+		this.directories = directories;
 	}
 
 	@Override
@@ -29,10 +23,9 @@ public class SlideShow extends GApplication {
 		title("Slide Show");
 		size(WIDTH, HEIGHT);
 		frames(10);
-		File dir = new File("C:\\Users\\nevil\\OneDrive\\Pictures\\Jersey trip 2024");
-		int count = countFiles(dir);
+		int count = countFiles(directories);
 		files = new Vector<>(count);
-		nameFiles(dir, files);
+		nameFiles(directories, files);
 		loadNextFile();
 	}
 
@@ -53,6 +46,14 @@ public class SlideShow extends GApplication {
 		img = loadImage(file, WIDTH, HEIGHT, false);
 	}
 
+	private int countFiles(File[] dirs) {
+		int count = 0;
+		for (int i = 0; i < dirs.length; i++) {
+			count += countFiles(dirs[i]);
+		}
+		return count;
+	}
+
 	private int countFiles(File dir) {
 		int count = 0;
 		File[] fileList = dir.listFiles();
@@ -66,6 +67,12 @@ public class SlideShow extends GApplication {
 			}
 		}
 		return count;
+	}
+
+	private void nameFiles(File[] dirs, Vector<String> names) {
+		for (int i = 0; i < dirs.length; i++) {
+			nameFiles(dirs[i], names);
+		}
 	}
 
 	private void nameFiles(File dir, Vector<String> names) {

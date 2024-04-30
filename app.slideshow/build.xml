@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project app.slideshow with libraries in sub-folder">
+	<!--this file was created by Eclipse Runnable JAR Export Wizard-->
+	<!--ANT 1.7 is required                                        -->
+	<!--define folder properties-->
+	<property name="dir.buildfile" value="." />
+	<property name="dir.workspace" value="${dir.buildfile}" />
+	<property name="app.base.version" value="2.1.0" />
+	<condition property="isWindows">
+		<os family="windows" />
+	</condition>
+	<condition property="isMac">
+		<os family="mac" />
+	</condition>
+
+	<target name="setWindowsRoot" if="isWindows">
+		<property name="user.root" value="C:/Users/nevil" />
+	</target>
+
+	<target name="setMacRoot" if="isMac">
+		<property name="user.root" value="/Users/nevil" />
+	</target>
+
+
+	<target name="create_run_jar" depends="setWindowsRoot, setMacRoot">
+		<property name="dir.jarfile" value="${user.root}/Projects/SlideShow.app" />
+		<buildnumber file="slideshow.build.number" />
+		<echo>"Build number is ${build.number}"</echo>
+		<tstamp>
+			<format property="slideshow.build.date" pattern="d MMMM yyyy" locale="EN,GB" />
+		</tstamp>
+
+		<jar destfile="${dir.jarfile}/SlideShowApp.jar">
+			<manifest>
+				<attribute name="Main-Class" value="applications.slideshow.Launcher" />
+				<attribute name="Class-Path" value=". SlideShowApp_lib/jcalendar-1.4.jar SlideShowApp_lib/jgoodies-forms-1.9.0.jar SlideShowApp_lib/jgoodies-common-1.8.1.jar SlideShowApp_lib/app.base-${app.base.version}.jar SlideShowApp_lib/javax.mail-1.6.2.jar SlideShowApp_lib/activation-1.1.jar SlideShowApp_lib/kernel-7.2.1.jar SlideShowApp_lib/bcpkix-jdk15on-1.69.jar SlideShowApp_lib/bcutil-jdk15on-1.69.jar SlideShowApp_lib/bcprov-jdk15on-1.69.jar SlideShowApp_lib/slf4j-api-1.7.31.jar SlideShowApp_lib/io-7.2.1.jar SlideShowApp_lib/commons-7.2.1.jar SlideShowApp_lib/layout-7.2.1.jar SlideShowApp_lib/metadata-extractor-2.14.0.jar SlideShowApp_lib/xmpcore-6.0.6.jar" />
+				<attribute name="Build-Date" value="${slideshow.build.date}" />
+				<attribute name="Build-Number" value="${slideshow.number}" />
+			</manifest>
+			<fileset dir="${dir.buildfile}/target/classes" />
+		</jar>
+		<delete dir="${dir.jarfile}/SlideShowApp_lib" />
+		<mkdir dir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="${dir.buildfile}/slideshow.bat" todir="${dir.jarfile}" overwrite="true" />
+		<copy file="${dir.buildfile}/slideshow.zsh" todir="${dir.jarfile}" overwrite="true" />
+		<setpermissions mode="755" nonPosixMode="pass">
+			<file file="${dir.jarfile}/slideshow.zsh"/>
+		</setpermissions>
+		
+		<file file="${dir.jarfile}/bank.zsh" />
+		<copy file="C:/Users/nevil/.m2/repository/com/toedter/jcalendar/1.4/jcalendar-1.4.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/jgoodies/jgoodies-forms/1.9.0/jgoodies-forms-1.9.0.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/jgoodies/jgoodies-common/1.8.1/jgoodies-common-1.8.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/brailsoft/app.base/2.1.0/app.base-2.1.0.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/sun/mail/javax.mail/1.6.2/javax.mail-1.6.2.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/itextpdf/kernel/7.2.1/kernel-7.2.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.69/bcpkix-jdk15on-1.69.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/org/bouncycastle/bcutil-jdk15on/1.69/bcutil-jdk15on-1.69.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.69/bcprov-jdk15on-1.69.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/org/slf4j/slf4j-api/1.7.31/slf4j-api-1.7.31.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/itextpdf/io/7.2.1/io-7.2.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/itextpdf/commons/7.2.1/commons-7.2.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/itextpdf/layout/7.2.1/layout-7.2.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/drewnoakes/metadata-extractor/2.14.0/metadata-extractor-2.14.0.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/com/adobe/xmp/xmpcore/6.0.6/xmpcore-6.0.6.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+	</target>
+</project>
