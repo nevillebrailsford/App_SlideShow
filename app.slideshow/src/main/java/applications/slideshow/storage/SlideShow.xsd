@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.example.org/SlideShow"
+	xmlns:tns="http://www.example.org/SlideShow"
+	elementFormDefault="qualified">
+
+	<xs:complexType name="folder">
+	   <xs:sequence>
+	       <xs:element name="path" type="xs:string" nillable="false">
+	       </xs:element>
+	   </xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="slideshow" mixed="true">
+		<xs:sequence>
+			<xs:element name="folder" type="tns:folder" minOccurs="0"
+				maxOccurs="unbounded" />
+			<xs:element name="slideshow" type="tns:slideshow"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="title" type="xs:string"
+			use="required" />
+	</xs:complexType>
+
+	<xs:element name="slideshows">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="slideshow" type="tns:slideshow"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

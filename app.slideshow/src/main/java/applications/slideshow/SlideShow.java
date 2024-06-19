@@ -1,5 +1,9 @@
 package applications.slideshow;
 
+import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.Vector;
 
@@ -8,18 +12,38 @@ import application.animation.GImage;
 
 public class SlideShow extends GApplication {
 	GImage img;
-	static final float WIDTH = 1024;
-	static final float HEIGHT = 682;
+	static final float WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width; // 1280; // 5184
+	static final float HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height - 100; // 853; // 3456
 	Vector<String> files = null;
 	int filesIndex = 0;
 	File[] directories;
 
 	public SlideShow(File[] directories) {
+		super();
 		this.directories = directories;
 	}
 
 	@Override
 	public void setup() {
+		WindowListener[] listeners = frame().getWindowListeners();
+		for (WindowListener w : listeners) {
+			String name = w.getClass().getName();
+			if (name.startsWith("application.animation.GApplication")) {
+				frame().removeWindowListener(w);
+				break;
+			}
+		}
+		frame().addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				app().stop();
+				frame().setVisible(false);
+				frame().dispose();
+			}
+
+		});
+		frame().setResizable(false);
 		title("Slide Show");
 		size(WIDTH, HEIGHT);
 		frames(10);
