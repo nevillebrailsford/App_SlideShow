@@ -9,9 +9,12 @@ import java.io.File;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class SlideShowAndFolderTest {
 
+    @TempDir
+    File rootDirectory;
     SlideShow slideShow = null;
     Folder folder = null;
     String title = "test slide show";
@@ -21,7 +24,7 @@ class SlideShowAndFolderTest {
     @BeforeEach
     void setUp() throws Exception {
         slideShow = new SlideShow(title);
-        folder = new Folder(new File(path));
+        folder = new Folder(new File(rootDirectory, path));
     }
 
     @AfterEach

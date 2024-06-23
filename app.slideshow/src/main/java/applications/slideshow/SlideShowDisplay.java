@@ -10,7 +10,7 @@ import java.util.Vector;
 import application.animation.GApplication;
 import application.animation.GImage;
 
-public class SlideShow extends GApplication {
+public class SlideShowDisplay extends GApplication {
 	GImage img;
 	static final float WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width; // 1280; // 5184
 	static final float HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height - 100; // 853; // 3456
@@ -18,7 +18,7 @@ public class SlideShow extends GApplication {
 	int filesIndex = 0;
 	File[] directories;
 
-	public SlideShow(File[] directories) {
+	public SlideShowDisplay(File[] directories) {
 		super();
 		this.directories = directories;
 	}

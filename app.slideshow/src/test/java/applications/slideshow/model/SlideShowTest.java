@@ -13,12 +13,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 class SlideShowTest {
     static DocumentBuilderFactory documentBuilderFactory;
 
+    @TempDir
+    File rootDirectory;
     Document document = null;
     SlideShow slideShow = null;
     SlideShow nullSlideShow = null;
@@ -42,7 +45,7 @@ class SlideShowTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        file = new File("This is a test path");
+        file = new File(rootDirectory, "This is a test path");
         path = file.getAbsolutePath();
         try {
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();

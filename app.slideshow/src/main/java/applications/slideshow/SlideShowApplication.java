@@ -97,7 +97,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
 		fc.addActionListener((e) -> {
 			if (e.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
 				File[] files = fc.getSelectedFiles();
-				new SlideShow(files);
+				new SlideShowDisplay(files);
 			} else if (e.getActionCommand().equals(JFileChooser.CANCEL_SELECTION)) {
 				shutdown();
 			}

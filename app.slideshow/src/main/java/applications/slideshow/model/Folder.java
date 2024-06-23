@@ -141,6 +141,20 @@ public class Folder implements Comparable<Folder> {
         }
     }
 
+    /**
+     * Method that will return a Folder as a SlideShow.
+     * 
+     * @return this as a SlideShow if it is really a SlideShow object.
+     * @throws IllegalArgumentException if it is a Folder object.
+     */
+    public SlideShow asSlideShow() {
+        if (isSlideShow()) {
+            return (SlideShow) this;
+        } else {
+            throw new IllegalArgumentException("Folder: this is not a slide show");
+        }
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(path);

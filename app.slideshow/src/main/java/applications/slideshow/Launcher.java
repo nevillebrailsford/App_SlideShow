@@ -17,7 +17,7 @@ public class Launcher {
 		int option = fc.showOpenDialog(null);
 		if (option == JFileChooser.APPROVE_OPTION) {
 			File[] files = fc.getSelectedFiles();
-			SlideShow sh = new SlideShow(files);
+			SlideShowDisplay sh = new SlideShowDisplay(files);
 		}
 	}
 
