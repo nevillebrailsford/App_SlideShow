@@ -102,6 +102,36 @@ public class SlideShowManager {
         LOGGER.exiting(CLASS_NAME, "addSlideShow");
     }
 
+    public void removeSlideShow(SlideShow oldShow) {
+        LOGGER.entering(CLASS_NAME, "removeSlideShow", oldShow);
+        if (oldShow == null) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: oldShow is null");
+            LOGGER.throwing(CLASS_NAME, "removeSlideShow", exc);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShow");
+            throw exc;
+        }
+        if (!slideShows().contains(oldShow)) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: oldShow not known");
+            LOGGER.throwing(CLASS_NAME, "removeSlideShow", exc);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShow");
+            throw exc;
+        }
+        try {
+            synchronized (folders) {
+                folders.remove(oldShow);
+                AuditService.writeAuditInformation(SlideShowAuditType.Removed, SlideShowAuditObject.SlideShow,
+                        oldShow.title());
+                updateStorage();
+            }
+        } catch (Exception e) {
+            LOGGER.warning("Caught exception: " + e.getMessage());
+            LOGGER.throwing(CLASS_NAME, "removeSlideShow", e);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShow");
+            throw e;
+        }
+        LOGGER.exiting(CLASS_NAME, "removeSlideShow");
+    }
+
     public void addSlideShowTo(SlideShow show, SlideShow newShow) {
         LOGGER.entering(CLASS_NAME, "addSlideShowTo", new Object[] { show, newShow });
         if (show == null) {
@@ -138,7 +168,7 @@ public class SlideShowManager {
             synchronized (folders) {
                 SlideShow slideShow = findSlideShow(show);
                 if (slideShow != null) {
-                    slideShow.addFolder(slideShow);
+                    slideShow.addFolder(newShow);
                     AuditService.writeAuditInformation(SlideShowAuditType.Added, SlideShowAuditObject.SlideShow,
                             newShow.title() + " added to " + show.title());
                     updateStorage();
@@ -151,6 +181,57 @@ public class SlideShowManager {
             throw e;
         }
         LOGGER.exiting(CLASS_NAME, "addSlideShowTo");
+    }
+
+    public void removeSlideShowFrom(SlideShow show, SlideShow oldShow) {
+        LOGGER.entering(CLASS_NAME, "removeSlideShowFrom", new Object[] { show, oldShow });
+        if (show == null) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show is null");
+            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+            throw exc;
+        }
+        if (oldShow == null) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: oldShow is null");
+            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+            throw exc;
+        }
+        if (show.equals(oldShow)) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show equals oldShow");
+            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+            throw exc;
+        }
+        if (!slideShows().contains(show)) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show not known");
+            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+            throw exc;
+        }
+        if (!show.slideShows().contains(oldShow)) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: oldShow not known in show");
+            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+            throw exc;
+        }
+        try {
+            synchronized (folders) {
+                SlideShow slideShow = findSlideShow(show);
+                if (slideShow != null) {
+                    slideShow.removeFolder(oldShow);
+                    AuditService.writeAuditInformation(SlideShowAuditType.Removed, SlideShowAuditObject.SlideShow,
+                            oldShow.title() + " remove from " + show.title());
+                    updateStorage();
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warning("Caught exception: " + e.getMessage());
+            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", e);
+            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+            throw e;
+        }
+        LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
     }
 
     public void addFolder(SlideShow slideShow, Folder newFolder) {
@@ -190,6 +271,51 @@ public class SlideShowManager {
             throw e;
         }
         LOGGER.exiting(CLASS_NAME, "addFolder");
+    }
+
+    public void removeFolder(SlideShow slideShow, Folder oldFolder) {
+        LOGGER.entering(CLASS_NAME, "removeFolder", new Object[] { slideShow, oldFolder });
+        if (slideShow == null) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: slideShow is null");
+            LOGGER.throwing(CLASS_NAME, "removeFolder", exc);
+            LOGGER.exiting(CLASS_NAME, "removeFolder");
+            throw exc;
+        }
+        if (oldFolder == null) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: oldFolder is null");
+            LOGGER.throwing(CLASS_NAME, "removeFolder", exc);
+            LOGGER.exiting(CLASS_NAME, "removeFolder");
+            throw exc;
+        }
+        if (!slideShows().contains(slideShow)) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: slideShow not known");
+            LOGGER.throwing(CLASS_NAME, "removeFolder", exc);
+            LOGGER.exiting(CLASS_NAME, "removeFolder");
+            throw exc;
+        }
+        if (!slideShow.folders().contains(oldFolder)) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: oldFolder not known");
+            LOGGER.throwing(CLASS_NAME, "removeFolder", exc);
+            LOGGER.exiting(CLASS_NAME, "removeFolder");
+            throw exc;
+        }
+        try {
+            synchronized (folders) {
+                SlideShow show = findSlideShow(slideShow);
+                if (show != null) {
+                    slideShow.removeFolder(oldFolder);
+                    AuditService.writeAuditInformation(SlideShowAuditType.Removed, SlideShowAuditObject.Folder,
+                            oldFolder.path());
+                    updateStorage();
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warning("Caught exception: " + e.getMessage());
+            LOGGER.throwing(CLASS_NAME, "removeFolder", e);
+            LOGGER.exiting(CLASS_NAME, "removeFolder");
+            throw e;
+        }
+        LOGGER.exiting(CLASS_NAME, "removeFolder");
     }
 
     private SlideShow findSlideShow(SlideShow show) {
