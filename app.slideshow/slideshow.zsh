@@ -16,4 +16,4 @@ echo "*============================================="
 echo "* Invoke the program - may take a few moments."
 echo "*============================================="
 
-java -jar ${ROOT_DIR}/${JAR_NAME}
+java -jar ${ROOT_DIR}/${JAR_NAME}  --name=slideshow.test --dir=c:/test/data

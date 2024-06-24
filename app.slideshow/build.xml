@@ -33,7 +33,7 @@
 
 		<jar destfile="${dir.jarfile}/SlideShowApp.jar">
 			<manifest>
-				<attribute name="Main-Class" value="applications.slideshow.Launcher" />
+				<attribute name="Main-Class" value="applications.slideshow.SlideShowApplication" />
 				<attribute name="Class-Path" value=". SlideShowApp_lib/jcalendar-1.4.jar SlideShowApp_lib/jgoodies-forms-1.9.0.jar SlideShowApp_lib/jgoodies-common-1.8.1.jar SlideShowApp_lib/app.base-${app.base.version}.jar SlideShowApp_lib/javax.mail-1.6.2.jar SlideShowApp_lib/activation-1.1.jar SlideShowApp_lib/kernel-7.2.1.jar SlideShowApp_lib/bcpkix-jdk15on-1.69.jar SlideShowApp_lib/bcutil-jdk15on-1.69.jar SlideShowApp_lib/bcprov-jdk15on-1.69.jar SlideShowApp_lib/slf4j-api-1.7.31.jar SlideShowApp_lib/io-7.2.1.jar SlideShowApp_lib/commons-7.2.1.jar SlideShowApp_lib/layout-7.2.1.jar SlideShowApp_lib/metadata-extractor-2.14.0.jar SlideShowApp_lib/xmpcore-6.0.6.jar" />
 				<attribute name="Build-Date" value="${slideshow.build.date}" />
 				<attribute name="Build-Number" value="${slideshow.number}" />
@@ -53,7 +53,7 @@
 		<copy file="C:/Users/nevil/.m2/repository/com/toedter/jcalendar/1.4/jcalendar-1.4.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
 		<copy file="C:/Users/nevil/.m2/repository/com/jgoodies/jgoodies-forms/1.9.0/jgoodies-forms-1.9.0.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
 		<copy file="C:/Users/nevil/.m2/repository/com/jgoodies/jgoodies-common/1.8.1/jgoodies-common-1.8.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
-		<copy file="C:/Users/nevil/.m2/repository/brailsoft/app.base/2.1.0/app.base-2.1.0.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
+		<copy file="C:/Users/nevil/.m2/repository/brailsoft/app.base/${app.base.version}/app.base-${app.base.version}.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
 		<copy file="C:/Users/nevil/.m2/repository/com/sun/mail/javax.mail/1.6.2/javax.mail-1.6.2.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
 		<copy file="C:/Users/nevil/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
 		<copy file="C:/Users/nevil/.m2/repository/com/itextpdf/kernel/7.2.1/kernel-7.2.1.jar" todir="${dir.jarfile}/SlideShowApp_lib" />
