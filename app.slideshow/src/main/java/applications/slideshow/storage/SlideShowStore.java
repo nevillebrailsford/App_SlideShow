@@ -80,9 +80,9 @@ public class SlideShowStore extends AbstractStoreData {
         Element slideShowElement = slideShow.buildElement(document);
         for (Folder folder : slideShow.folders()) {
             slideShowElement.appendChild(buildElementFor(folder, document));
-            for (SlideShow innerSlideShow : SlideShowManager.instance().slideShows(slideShow)) {
-                slideShowElement.appendChild(buildElementFor(innerSlideShow, document));
-            }
+        }
+        for (SlideShow innerSlideShow : SlideShowManager.instance().slideShows(slideShow)) {
+            slideShowElement.appendChild(buildElementFor(innerSlideShow, document));
         }
         LOGGER.exiting(CLASS_NAME, "buildElementFor");
         return slideShowElement;

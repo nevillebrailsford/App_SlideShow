@@ -59,6 +59,7 @@ public class SlideShow extends Folder implements Comparable<Folder> {
             throw new IllegalArgumentException("SlideShow: slideShowElement is not for folder");
         }
         String title = slideShowElement.getAttribute(XMLConstants.SLIDE_SHOW_TITLE);
+        folders = new ArrayList<>();
         this.title = title;
     }
 

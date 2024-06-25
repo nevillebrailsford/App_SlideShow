@@ -3,6 +3,7 @@ package applications.slideshow.storage;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import application.notification.Notification;
 import application.notification.NotificationListener;
+import application.storage.LoadState;
 import application.storage.Storage;
 import application.storage.StorageNotificationType;
 import application.storage.StoreState;
@@ -12,6 +13,7 @@ import applications.slideshow.model.Folder;
 import applications.slideshow.model.SlideShow;
 
 public abstract class BaseTest {
+    static boolean runMonitor = false;
 
     @TempDir
     File rootDirectory;
@@ -23,11 +25,11 @@ public abstract class BaseTest {
 
     Object waitForFinish = new Object();
     boolean storeSuccess = false;
-    boolean storeFailed = false;
+    boolean loadSuccess = false;
     boolean failedIO = false;
 
     SlideShowStore slideShowStore = null;
-//    SlideShowReadRead slideShowRead = null;
+    SlideShowLoad slideShowLoad = null;
 
     File modelFile = null;
 
@@ -52,7 +54,14 @@ public abstract class BaseTest {
                     case Started -> ignore();
                 }
             }
-            case Load -> ignore();
+            case Load -> {
+                LoadState state = (LoadState) notification.subject().get();
+                switch (state) {
+                    case Complete -> loadData();
+                    case Failed -> failed();
+                    case Started -> ignore();
+                }
+            }
         }
     }
 
@@ -66,6 +75,13 @@ public abstract class BaseTest {
         }
     }
 
+    private void loadData() {
+        synchronized (waitForFinish) {
+            loadSuccess = true;
+            waitForFinish.notifyAll();
+        }
+    }
+
     private void failed() {
         synchronized (waitForFinish) {
             failedIO = true;
@@ -75,7 +91,7 @@ public abstract class BaseTest {
 
     void resetFlags() {
         storeSuccess = false;
-        storeFailed = false;
+        loadSuccess = false;
         failedIO = false;
     }
 

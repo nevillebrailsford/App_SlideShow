@@ -7,6 +7,7 @@ import application.definition.ApplicationConfiguration;
 import application.definition.ApplicationDefinition;
 import application.logging.LogConfigurer;
 import application.notification.NotificationCentre;
+import application.notification.NotificationMonitor;
 import application.storage.Storage;
 import java.nio.file.Files;
 import java.util.List;
@@ -29,6 +30,8 @@ class SlideShowStoreTest extends BaseTest {
         ApplicationConfiguration.registerApplication(app, rootDirectory.getAbsolutePath());
         LogConfigurer.setUp();
         NotificationCentre.addListener(listener);
+        if (runMonitor)
+            new NotificationMonitor(System.out);
         slideShowStore = new SlideShowStore();
     }
 

@@ -56,6 +56,20 @@ public class SlideShowManager {
         return copyList;
     }
 
+    public SlideShow slideShow(String title) {
+        LOGGER.entering(title, "slideShow", title);
+        SlideShow result = null;
+        List<SlideShow> shows = slideShows();
+        for (SlideShow show : shows) {
+            if (show.title().equals(title)) {
+                result = show;
+                break;
+            }
+        }
+        LOGGER.exiting(title, "slideShow", result);
+        return result;
+    }
+
     public List<Folder> folders(SlideShow show) {
         LOGGER.entering(CLASS_NAME, "folders");
         List<Folder> copyList = show.folders().stream().filter((f) -> f.isFolder()).sorted()
