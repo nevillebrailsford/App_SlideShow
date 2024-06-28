@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-
-	<xs:element name="slideshows" type="slideshowsType" />
-	<xs:element name="slideshow" type="slideshowType" />
-    <xs:element name="folder" type="folderType" />
-	<xs:element name="path" type="xs:string" />
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	>
+	
+	<xs:element name="path" type="xs:string"/>
+	<xs:element name="folder" type="folderType"/>
+	<xs:element name="folders" type="foldersType"/>
+	<xs:element name="slideshow" type="slideshowType"/>
+	<xs:element name="slideshows" type="slideshowsType"/>
+	
+	<xs:complexType name="foldersType">
+	   <xs:sequence>
+	       <xs:element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
+	   </xs:sequence>
+	</xs:complexType>
 	
 	<xs:complexType name="folderType">
 	   <xs:sequence>
-	       <xs:element ref="path" minOccurs="1" maxOccurs="1"/>
+	       <xs:element ref="path" minOccurs="1" maxOccurs="unbounded"/>
 	   </xs:sequence>
 	</xs:complexType>
-
-	<xs:complexType name="slideshowType" > 
-		<xs:sequence>
-		  <xs:element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
-		  <xs:element ref="slideshow" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
-		<xs:attribute name="title"></xs:attribute>
+	
+	<xs:complexType name="slideshowType">
+	   <xs:sequence>
+	       <xs:element ref="folders" minOccurs="0" maxOccurs="unbounded"/>
+	       <xs:element ref="slideshow" minOccurs="0" maxOccurs="unbounded"/>
+	   </xs:sequence>
+	   <xs:attribute name="title" type="xs:string"/>
 	</xs:complexType>
-
+	
 	<xs:complexType name="slideshowsType">
-		<xs:sequence>
-			<xs:element type="slideshowType" name="slideshow" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
+	   <xs:sequence>
+	       <xs:element ref="slideshow" minOccurs="0" maxOccurs="unbounded"/>
+	   </xs:sequence>
 	</xs:complexType>
+	
 </xs:schema>

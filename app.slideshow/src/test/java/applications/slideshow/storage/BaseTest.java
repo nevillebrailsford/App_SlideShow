@@ -9,8 +9,7 @@ import application.storage.StorageNotificationType;
 import application.storage.StoreState;
 import java.io.File;
 import org.junit.jupiter.api.io.TempDir;
-import applications.slideshow.model.Folder;
-import applications.slideshow.model.SlideShow;
+import applications.slideshow.model.Directory;
 
 public abstract class BaseTest {
     static boolean runMonitor = false;
@@ -18,10 +17,10 @@ public abstract class BaseTest {
     @TempDir
     File rootDirectory;
 
-    SlideShow slideShow = new SlideShow("title");
-    SlideShow slideShow2 = new SlideShow("title2");
-    SlideShow duplicateShow = new SlideShow("title");
-    Folder folder = new Folder(new File("path"));
+    Directory slideShow = new Directory("title");
+    Directory slideShow2 = new Directory("title2");
+    Directory duplicateShow = new Directory("title");
+    Directory folder = new Directory(new File("path"));
 
     Object waitForFinish = new Object();
     boolean storeSuccess = false;
@@ -95,22 +94,22 @@ public abstract class BaseTest {
         failedIO = false;
     }
 
-    void addASlideShow(SlideShow slideShow) throws Exception {
+    void addASlideShow(Directory slideShow) throws Exception {
         SlideShowManager.instance().addSlideShow(slideShow);
         synchronized (waitForFinish) {
             waitForFinish.wait();
         }
     }
 
-    void addASlideShowTo(SlideShow show, SlideShow newShow) throws Exception {
+    void addASlideShowTo(Directory show, Directory newShow) throws Exception {
         SlideShowManager.instance().addSlideShowTo(show, newShow);
         synchronized (waitForFinish) {
             waitForFinish.wait();
         }
     }
 
-    void addAFolder(SlideShow slideShow, Folder folder) throws Exception {
-        SlideShowManager.instance().addFolder(slideShow, folder);
+    void addAFolder(Directory slideShow, Directory directory) throws Exception {
+        SlideShowManager.instance().addDirectory(slideShow, directory);
         synchronized (waitForFinish) {
             waitForFinish.wait();
         }
@@ -137,16 +136,16 @@ public abstract class BaseTest {
         }
     }
 
-    void storeSlideShow(SlideShow slideShow) throws InterruptedException {
+    void storeSlideShow(Directory slideShow) throws InterruptedException {
         synchronized (waitForFinish) {
             SlideShowManager.instance().addSlideShow(slideShow);
             waitForFinish.wait();
         }
     }
 
-    void storeFolder(SlideShow slideShow, Folder folder) throws InterruptedException {
+    void storeFolder(Directory slideShow, Directory directory) throws InterruptedException {
         synchronized (waitForFinish) {
-            SlideShowManager.instance().addFolder(slideShow, folder);
+            SlideShowManager.instance().addDirectory(slideShow, directory);
             waitForFinish.wait();
         }
     }

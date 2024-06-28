@@ -2,8 +2,10 @@ package applications.slideshow.gui;
 
 public interface IApplication {
 
-	void exitApplicationAction();
+    void exitApplicationAction();
 
-	void preferencesAction();
+    void preferencesAction();
+
+    void newSlideShowAction();
 
 }

@@ -18,8 +18,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import applications.slideshow.model.Folder;
-import applications.slideshow.model.SlideShow;
+import applications.slideshow.model.Directory;
 import applications.slideshow.model.XMLConstants;
 
 public class SlideShowStore extends AbstractStoreData {
@@ -68,29 +67,29 @@ public class SlideShowStore extends AbstractStoreData {
 
     private void addSlideShowElements(Document document, Element slideShowsRootElement) {
         LOGGER.entering(CLASS_NAME, "addSlideShowElements");
-        for (SlideShow slideShow : SlideShowManager.instance().slideShows()) {
+        for (Directory slideShow : SlideShowManager.instance().slideShows()) {
             Element slideShowElement = buildElementFor(slideShow, document);
             slideShowsRootElement.appendChild(slideShowElement);
         }
         LOGGER.exiting(CLASS_NAME, "addSlideShowElements");
     }
 
-    private Element buildElementFor(SlideShow slideShow, Document document) {
+    private Element buildElementFor(Directory slideShow, Document document) {
         LOGGER.entering(CLASS_NAME, "buildElementFor", new Object[] { slideShow, document });
         Element slideShowElement = slideShow.buildElement(document);
-        for (Folder folder : slideShow.folders()) {
-            slideShowElement.appendChild(buildElementFor(folder, document));
+        for (Directory directory : slideShow.directories()) {
+            slideShowElement.appendChild(buildElementForDirectory(directory, document));
         }
-        for (SlideShow innerSlideShow : SlideShowManager.instance().slideShows(slideShow)) {
+        for (Directory innerSlideShow : SlideShowManager.instance().slideShows(slideShow)) {
             slideShowElement.appendChild(buildElementFor(innerSlideShow, document));
         }
         LOGGER.exiting(CLASS_NAME, "buildElementFor");
         return slideShowElement;
     }
 
-    private Element buildElementFor(Folder folder, Document document) {
-        LOGGER.entering(CLASS_NAME, "buildElementFor", new Object[] { folder, document });
-        Element folderElement = folder.buildElement(document);
+    private Element buildElementForDirectory(Directory directory, Document document) {
+        LOGGER.entering(CLASS_NAME, "buildElementFor", new Object[] { directory, document });
+        Element folderElement = directory.buildElement(document);
         LOGGER.exiting(CLASS_NAME, "buildElementFor");
         return folderElement;
     }
