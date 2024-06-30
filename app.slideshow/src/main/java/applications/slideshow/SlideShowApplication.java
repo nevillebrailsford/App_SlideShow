@@ -31,7 +31,6 @@ import applications.slideshow.actions.ExitApplicationAction;
 import applications.slideshow.dialog.SlideShowPreferences;
 import applications.slideshow.gui.IApplication;
 import applications.slideshow.gui.SlideShowMenu;
-import applications.slideshow.gui.SlideShowTreeModel;
 import applications.slideshow.model.Directory;
 import applications.slideshow.storage.SlideShowLoad;
 import applications.slideshow.storage.SlideShowManager;
@@ -101,8 +100,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         parent.setJMenuBar(sm);
         JSplitPane mainPanel = new JSplitPane();
         add(mainPanel, BorderLayout.CENTER);
-        SlideShowTreeModel model = new SlideShowTreeModel();
-        JTree tree = new JTree(model);
+        JTree tree = new JTree(SlideShowManager.instance());
         JScrollPane treeView = new JScrollPane();
         treeView.setPreferredSize(new Dimension(300, 500));
         treeView.setViewportView(tree);

@@ -4,19 +4,24 @@ import application.audit.AuditService;
 import application.definition.ApplicationConfiguration;
 import application.storage.Storage;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import applications.slideshow.model.Directory;
 
-public class SlideShowManager {
+public class SlideShowManager implements TreeModel {
     private static final String CLASS_NAME = SlideShowManager.class.getName();
     private static final Logger LOGGER = ApplicationConfiguration.logger();
 
     private static SlideShowManager instance = null;
 
-    private final List<Directory> directories;
+    private Directory root = new Directory("Slide shows");
+    private Vector<TreeModelListener> treeModelListeners = new Vector<TreeModelListener>();
 
     public synchronized static SlideShowManager instance() {
         LOGGER.entering(CLASS_NAME, "instance");
@@ -29,29 +34,34 @@ public class SlideShowManager {
 
     private SlideShowManager() {
         LOGGER.entering(CLASS_NAME, "cinit");
-        directories = new ArrayList<>();
         LOGGER.exiting(CLASS_NAME, "cinit");
     }
 
     public void clear() {
         LOGGER.entering(CLASS_NAME, "clear");
-        directories.clear();
+        root.clear();
         updateStorage();
         LOGGER.exiting(CLASS_NAME, "clear");
     }
 
     public List<Directory> allDirectories() {
         LOGGER.entering(CLASS_NAME, "allDirectories");
-        List<Directory> copyList = directories.stream().sorted().collect(Collectors.toList());
+        List<Directory> copyList = root.allDirectories().stream().sorted().collect(Collectors.toList());
         LOGGER.exiting(CLASS_NAME, "allDirectories", copyList);
         return copyList;
     }
 
     public List<Directory> slideShows() {
         LOGGER.entering(CLASS_NAME, "slideShows");
-        List<Directory> copyList = directories.stream().filter((f) -> f.isSlideShow()).sorted()
-                .collect(Collectors.toList());
+        List<Directory> copyList = root.slideShows().stream().sorted().collect(Collectors.toList());
         LOGGER.exiting(CLASS_NAME, "slideShows", copyList);
+        return copyList;
+    }
+
+    public List<Directory> directories() {
+        LOGGER.entering(CLASS_NAME, "directories");
+        List<Directory> copyList = root.directories().stream().sorted().collect(Collectors.toList());
+        LOGGER.exiting(CLASS_NAME, "directories", copyList);
         return copyList;
     }
 
@@ -91,6 +101,12 @@ public class SlideShowManager {
             LOGGER.exiting(CLASS_NAME, "addSlideShow");
             throw exc;
         }
+        if (newShow.isDirectory()) {
+            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: newShow is a directory");
+            LOGGER.throwing(CLASS_NAME, "addSlideShow", exc);
+            LOGGER.exiting(CLASS_NAME, "addSlideShow");
+            throw exc;
+        }
         if (slideShows().contains(newShow)) {
             IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: newShow already exists");
             LOGGER.throwing(CLASS_NAME, "addSlideShow", exc);
@@ -98,8 +114,8 @@ public class SlideShowManager {
             throw exc;
         }
         try {
-            synchronized (directories) {
-                if (directories.add(newShow)) {
+            synchronized (root) {
+                if (root.add(newShow)) {
                     AuditService.writeAuditInformation(SlideShowAuditType.Added, SlideShowAuditObject.SlideShow,
                             newShow.title());
                     updateStorage();
@@ -129,8 +145,8 @@ public class SlideShowManager {
             throw exc;
         }
         try {
-            synchronized (directories) {
-                if (directories.remove(oldShow)) {
+            synchronized (root) {
+                if (root.remove(oldShow)) {
                     AuditService.writeAuditInformation(SlideShowAuditType.Removed, SlideShowAuditObject.SlideShow,
                             oldShow.title());
                     updateStorage();
@@ -166,7 +182,7 @@ public class SlideShowManager {
             throw exc;
         }
         try {
-            synchronized (directories) {
+            synchronized (root) {
                 Directory slideShow = findSlideShow(show);
                 if (slideShow != null) {
                     if (slideShow.add(newShow)) {
@@ -212,7 +228,7 @@ public class SlideShowManager {
             throw exc;
         }
         try {
-            synchronized (directories) {
+            synchronized (root) {
                 Directory slideShow = findSlideShow(show);
                 if (slideShow != null) {
                     if (slideShow.remove(oldShow)) {
@@ -252,7 +268,7 @@ public class SlideShowManager {
             throw exc;
         }
         try {
-            synchronized (directories) {
+            synchronized (root) {
                 Directory show = findSlideShow(slideShow);
                 if (show != null) {
                     if (slideShow.add(newDirectory)) {
@@ -292,7 +308,7 @@ public class SlideShowManager {
             throw exc;
         }
         try {
-            synchronized (directories) {
+            synchronized (root) {
                 Directory show = findSlideShow(slideShow);
                 if (show != null) {
                     if (slideShow.remove(oldDirectory)) {
@@ -327,6 +343,7 @@ public class SlideShowManager {
         slideShowStore.setFileName(dataFile.getAbsolutePath());
         Storage storage = new Storage();
         storage.storeData(slideShowStore);
+        fireTreeStructureChanged(root);
         LOGGER.exiting(CLASS_NAME, "updateStorage");
     }
 
@@ -349,6 +366,74 @@ public class SlideShowManager {
         }
         LOGGER.exiting(CLASS_NAME, "obtainModelDirectory", modelDirectory);
         return modelDirectory;
+    }
+
+    @Override
+    public Object getRoot() {
+        LOGGER.entering(CLASS_NAME, "getRoot");
+        LOGGER.exiting(CLASS_NAME, "getRoot", root);
+        return root;
+    }
+
+    @Override
+    public Object getChild(Object parent, int index) {
+        LOGGER.entering(CLASS_NAME, "getChild", new Object[] { parent, index });
+        Directory node = (Directory) parent;
+        Directory result = (Directory) node.getChildAt(index);
+        LOGGER.exiting(CLASS_NAME, "getChild", result);
+        return result;
+    }
+
+    @Override
+    public int getChildCount(Object parent) {
+        LOGGER.entering(CLASS_NAME, "getChildCount", parent);
+        Directory directory = (Directory) parent;
+        int result = directory.getChildCount();
+        LOGGER.exiting(CLASS_NAME, "getChildCount", result);
+        return result;
+    }
+
+    @Override
+    public boolean isLeaf(Object node) {
+        LOGGER.entering(CLASS_NAME, "isLeaf", node);
+        Directory directory = (Directory) node;
+        boolean result = directory.isLeaf();
+        LOGGER.exiting(CLASS_NAME, "isLeaf", result);
+        return result;
+    }
+
+    @Override
+    public void valueForPathChanged(TreePath path, Object newValue) {
+    }
+
+    @Override
+    public int getIndexOfChild(Object parent, Object child) {
+        LOGGER.entering(CLASS_NAME, "getIndexOfChild", new Object[] { parent, child });
+        Directory parentDirectory = (Directory) parent;
+        Directory childDirectory = (Directory) child;
+        int result = parentDirectory.getIndex(childDirectory);
+        LOGGER.exiting(CLASS_NAME, "getIndexOfChild", result);
+        return result;
+
+    }
+
+    @Override
+    public void addTreeModelListener(TreeModelListener l) {
+        treeModelListeners.addElement(l);
+    }
+
+    @Override
+    public void removeTreeModelListener(TreeModelListener l) {
+        treeModelListeners.removeElement(l);
+    }
+
+    private void fireTreeStructureChanged(Directory oldRoot) {
+        LOGGER.entering(CLASS_NAME, "fireTreeStructureChanged", oldRoot);
+        TreeModelEvent e = new TreeModelEvent(this, new Object[] { oldRoot });
+        for (TreeModelListener tml : treeModelListeners) {
+            tml.treeStructureChanged(e);
+        }
+        LOGGER.exiting(CLASS_NAME, "fireTreeStructureChanged");
     }
 
 }

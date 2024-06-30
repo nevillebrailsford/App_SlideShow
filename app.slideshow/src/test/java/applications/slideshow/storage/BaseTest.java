@@ -17,10 +17,10 @@ public abstract class BaseTest {
     @TempDir
     File rootDirectory;
 
-    Directory slideShow = new Directory("title");
-    Directory slideShow2 = new Directory("title2");
+    Directory slideShow = new Directory("titlea");
+    Directory slideShow2 = new Directory("titleb");
     Directory duplicateShow = new Directory("title");
-    Directory folder = new Directory(new File("path"));
+    Directory directory = new Directory(new File("path"));
 
     Object waitForFinish = new Object();
     boolean storeSuccess = false;
@@ -108,7 +108,7 @@ public abstract class BaseTest {
         }
     }
 
-    void addAFolder(Directory slideShow, Directory directory) throws Exception {
+    void addADirectory(Directory slideShow, Directory directory) throws Exception {
         SlideShowManager.instance().addDirectory(slideShow, directory);
         synchronized (waitForFinish) {
             waitForFinish.wait();

@@ -4,14 +4,17 @@ import application.model.ElementBuilder;
 import application.model.ElementChecker;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.swing.tree.TreeNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Directory implements Comparable<Directory> {
+public class Directory implements Comparable<Directory>, TreeNode {
     private List<Directory> store;
+    private Directory parent = null;
     private boolean isDirectory = false;
     private boolean isSlideShow = false;
     private String title = null;
@@ -21,12 +24,14 @@ public class Directory implements Comparable<Directory> {
         isSlideShow = true;
         store = new ArrayList<>();
         this.title = title;
+        parent = null;
     }
 
     public Directory(File path) {
         isDirectory = true;
         this.path = path;
         store = null;
+        parent = null;
     }
 
     public Directory(Element directoryElement) {
@@ -95,6 +100,10 @@ public class Directory implements Comparable<Directory> {
                 return false;
             }
         }
+        if (directory.parent != null) {
+            return false;
+        }
+        directory.parent = this;
         return store.add(directory);
     }
 
@@ -103,6 +112,14 @@ public class Directory implements Comparable<Directory> {
             return false;
         }
         return store.remove(directory);
+    }
+
+    public Directory parent() {
+        return parent;
+    }
+
+    public void setParent(Directory parent) {
+        this.parent = parent;
     }
 
     public String title() {
@@ -195,13 +212,13 @@ public class Directory implements Comparable<Directory> {
     public int compareTo(Directory other) {
         if (isSlideShow) {
             if (other.isSlideShow) {
-                return other.title.compareTo(title);
+                return title.compareTo(other.title);
             } else {
                 return 1;
             }
         } else {
             if (other.isDirectory) {
-                return other.path.getAbsolutePath().compareTo(path.getAbsolutePath());
+                return path.getAbsolutePath().compareTo(other.path.getAbsolutePath());
             } else {
                 return -1;
             }
@@ -244,6 +261,59 @@ public class Directory implements Comparable<Directory> {
             }
         }
         return result;
+    }
+
+    // TreeNode implementation
+
+    @Override
+    public TreeNode getChildAt(int childIndex) {
+        return allDirectories().get(childIndex);
+    }
+
+    @Override
+    public int getChildCount() {
+        return allDirectories().size();
+    }
+
+    @Override
+    public TreeNode getParent() {
+        return parent;
+    }
+
+    @Override
+    public int getIndex(TreeNode node) {
+        if (allDirectories().contains(node)) {
+            return allDirectories().indexOf(node);
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public boolean getAllowsChildren() {
+        return isSlideShow;
+    }
+
+    @Override
+    public boolean isLeaf() {
+        return isDirectory || allDirectories().size() == 0;
+    }
+
+    @Override
+    public Enumeration<? extends TreeNode> children() {
+        return new Enumeration<TreeNode>() {
+            private int position = 0;
+
+            @Override
+            public boolean hasMoreElements() {
+                return position < allDirectories().size();
+            }
+
+            @Override
+            public TreeNode nextElement() {
+                return allDirectories().get(position++);
+            }
+        };
     }
 
 }
