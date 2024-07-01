@@ -12,6 +12,11 @@ import javax.swing.tree.TreeNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/**
+ * Directory is the class that represents a directory to be displayed in a slide
+ * show. It is also used as a container to store the directories and other slide
+ * shows.
+ */
 public class Directory implements Comparable<Directory>, TreeNode {
     private List<Directory> store;
     private Directory parent = null;
@@ -20,6 +25,12 @@ public class Directory implements Comparable<Directory>, TreeNode {
     private String title = null;
     private File path = null;
 
+    /**
+     * This constructor creates a slide show. It can be used to store ither
+     * directories or slide shows.
+     * 
+     * @param title - the title for the slide show.
+     */
     public Directory(String title) {
         isSlideShow = true;
         store = new ArrayList<>();
@@ -27,6 +38,12 @@ public class Directory implements Comparable<Directory>, TreeNode {
         parent = null;
     }
 
+    /**
+     * This constructor creates a directory. It is used to determine which files are
+     * used by the slide show application.
+     * 
+     * @param path - the file that represents the path to the directory.
+     */
     public Directory(File path) {
         isDirectory = true;
         this.path = path;
@@ -34,10 +51,24 @@ public class Directory implements Comparable<Directory>, TreeNode {
         parent = null;
     }
 
+    /**
+     * This constructor is used to build a directory from the information stored on
+     * backing storage.
+     * 
+     * @param directoryElement - the XML element.
+     */
     public Directory(Element directoryElement) {
         this(directoryElement, XMLConstants.SLIDE_SHOW, XMLConstants.DIRECTORY);
     }
 
+    /**
+     * This constructor is used to build a directory from the information stored on
+     * backing storage.
+     * 
+     * @param directoryElement - the XML element.
+     * @param tagName          - used to verify that the element is for a directory.
+     * @throws IllegalArgumentException - if the element is not for a directory.
+     */
     public Directory(Element directoryElement, String... tagName) {
         boolean valid = false;
         String validTag = null;
@@ -72,6 +103,12 @@ public class Directory implements Comparable<Directory>, TreeNode {
 
     }
 
+    /**
+     * Build an XML element to be used for backing storage for this directory.
+     * 
+     * @param document - a w3 document
+     * @return an XML element
+     */
     public Element buildElement(Document document) {
         if (isSlideShow) {
             return buildSlideShowElement(document, XMLConstants.SLIDE_SHOW);
@@ -80,10 +117,20 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Tests whether the directory denoted by this object is a directory.
+     * 
+     * @return true if and only if this directory is a directory; false otherwise
+     */
     public boolean isDirectory() {
         return isDirectory;
     }
 
+    /**
+     * Tests whether the directory denoted by this object is a slide show.
+     * 
+     * @return true if and only if this directory is a slide show; false otherwise
+     */
     public boolean isSlideShow() {
         return isSlideShow;
     }
@@ -234,6 +281,11 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Returns a string representation of the object
+     * 
+     * @return a string representation of the object
+     */
     public String plainString() {
         return super.toString();
     }

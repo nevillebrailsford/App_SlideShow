@@ -1,37 +1,41 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	>
-	
-	<xs:element name="path" type="xs:string"/>
-	<xs:element name="folder" type="folderType"/>
-	<xs:element name="folders" type="foldersType"/>
-	<xs:element name="slideshow" type="slideshowType"/>
-	<xs:element name="slideshows" type="slideshowsType"/>
-	
-	<xs:complexType name="foldersType">
-	   <xs:sequence>
-	       <xs:element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
-	   </xs:sequence>
-	</xs:complexType>
-	
-	<xs:complexType name="folderType">
-	   <xs:sequence>
-	       <xs:element ref="path" minOccurs="1" maxOccurs="unbounded"/>
-	   </xs:sequence>
-	</xs:complexType>
-	
-	<xs:complexType name="slideshowType">
-	   <xs:sequence>
-	       <xs:element ref="folders" minOccurs="0" maxOccurs="unbounded"/>
-	       <xs:element ref="slideshow" minOccurs="0" maxOccurs="unbounded"/>
-	   </xs:sequence>
-	   <xs:attribute name="title" type="xs:string"/>
-	</xs:complexType>
-	
-	<xs:complexType name="slideshowsType">
-	   <xs:sequence>
-	       <xs:element ref="slideshow" minOccurs="0" maxOccurs="unbounded"/>
-	   </xs:sequence>
-	</xs:complexType>
-	
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="path" type="xs:string"/>
+  <xs:element name="directory">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="path"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="title" type="xs:string"/>
+  <xs:element name="directories">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="directory" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="slideshows">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element ref="slideshow" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="slideshow">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="title"/>
+        <xs:element ref="directories"/>
+        <xs:element ref="slideshows"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="slideshows"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

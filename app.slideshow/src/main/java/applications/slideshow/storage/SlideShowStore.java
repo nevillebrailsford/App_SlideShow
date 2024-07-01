@@ -59,7 +59,7 @@ public class SlideShowStore extends AbstractStoreData {
 
     private void writeDataTo(Document document) {
         LOGGER.entering(CLASS_NAME, "writeDataTo", document);
-        Element rootElement = document.createElement(XMLConstants.SLIDE_SHOWS);
+        Element rootElement = document.createElement(XMLConstants.ROOT);
         document.appendChild(rootElement);
         addSlideShowElements(document, rootElement);
         LOGGER.exiting(CLASS_NAME, "writeDataTo");
@@ -67,9 +67,11 @@ public class SlideShowStore extends AbstractStoreData {
 
     private void addSlideShowElements(Document document, Element slideShowsRootElement) {
         LOGGER.entering(CLASS_NAME, "addSlideShowElements");
+        Element slideShowsElement = document.createElement(XMLConstants.SLIDE_SHOWS);
+        slideShowsRootElement.appendChild(slideShowsElement);
         for (Directory slideShow : SlideShowManager.instance().slideShows()) {
             Element slideShowElement = buildElementFor(slideShow, document);
-            slideShowsRootElement.appendChild(slideShowElement);
+            slideShowsElement.appendChild(slideShowElement);
         }
         LOGGER.exiting(CLASS_NAME, "addSlideShowElements");
     }
@@ -77,11 +79,15 @@ public class SlideShowStore extends AbstractStoreData {
     private Element buildElementFor(Directory slideShow, Document document) {
         LOGGER.entering(CLASS_NAME, "buildElementFor", new Object[] { slideShow, document });
         Element slideShowElement = slideShow.buildElement(document);
+        Element directoriesElement = document.createElement(XMLConstants.DIRECTORIES);
+        slideShowElement.appendChild(directoriesElement);
         for (Directory directory : slideShow.directories()) {
-            slideShowElement.appendChild(buildElementForDirectory(directory, document));
+            directoriesElement.appendChild(buildElementForDirectory(directory, document));
         }
+        Element slideShowsElement = document.createElement(XMLConstants.SLIDE_SHOWS);
+        slideShowElement.appendChild(slideShowsElement);
         for (Directory innerSlideShow : SlideShowManager.instance().slideShows(slideShow)) {
-            slideShowElement.appendChild(buildElementFor(innerSlideShow, document));
+            slideShowsElement.appendChild(buildElementFor(innerSlideShow, document));
         }
         LOGGER.exiting(CLASS_NAME, "buildElementFor");
         return slideShowElement;
@@ -89,9 +95,9 @@ public class SlideShowStore extends AbstractStoreData {
 
     private Element buildElementForDirectory(Directory directory, Document document) {
         LOGGER.entering(CLASS_NAME, "buildElementFor", new Object[] { directory, document });
-        Element folderElement = directory.buildElement(document);
+        Element documentElement = directory.buildElement(document);
         LOGGER.exiting(CLASS_NAME, "buildElementFor");
-        return folderElement;
+        return documentElement;
     }
 
     private void writeXML(Document doc, OutputStream output) throws IOException {

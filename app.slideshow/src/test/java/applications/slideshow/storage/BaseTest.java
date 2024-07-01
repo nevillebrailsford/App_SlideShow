@@ -150,4 +150,35 @@ public abstract class BaseTest {
         }
     }
 
+    void createNestedDirectory() throws InterruptedException {
+        for (int i = 1; i < 3; i++) {
+            Directory ss = new Directory("title" + i);
+            synchronized (waitForFinish) {
+                SlideShowManager.instance().addSlideShow(ss);
+                waitForFinish.wait();
+            }
+            for (int j = 1; j < 5; j++) {
+                Directory dir = new Directory(new File("path" + i * j));
+                synchronized (waitForFinish) {
+                    SlideShowManager.instance().addDirectory(ss, dir);
+                    waitForFinish.wait();
+                }
+                for (int k = 1; k < 2; k++) {
+                    Directory iss = new Directory("inner" + i * j * k);
+                    synchronized (waitForFinish) {
+                        SlideShowManager.instance().addSlideShowTo(ss, iss);
+                        waitForFinish.wait();
+                    }
+                    for (int l = 1; l < 2; l++) {
+                        Directory idir = new Directory(new File("ipath" + i * j * k * l));
+                        synchronized (waitForFinish) {
+                            SlideShowManager.instance().addDirectory(iss, idir);
+                            waitForFinish.wait();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
