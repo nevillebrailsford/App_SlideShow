@@ -77,7 +77,7 @@ public class SlideShowManager implements TreeModel {
     }
 
     public Directory slideShow(String title) {
-        LOGGER.entering(title, "slideShow", title);
+        LOGGER.entering(CLASS_NAME, "slideShow", title);
         Directory result = null;
         List<Directory> shows = slideShows();
         for (Directory show : shows) {
@@ -86,7 +86,7 @@ public class SlideShowManager implements TreeModel {
                 break;
             }
         }
-        LOGGER.exiting(title, "slideShow", result);
+        LOGGER.exiting(CLASS_NAME, "slideShow", result);
         return result;
     }
 
@@ -302,6 +302,14 @@ public class SlideShowManager implements TreeModel {
             LOGGER.exiting(CLASS_NAME, "addDirectory");
             throw exc;
         }
+        if (slideShow.directories().contains(newDirectory)) {
+            IllegalArgumentException exc = new IllegalArgumentException(
+                    "SlideShowManager: newDirectory already present");
+            updateFailed(exc);
+            LOGGER.throwing(CLASS_NAME, "addDirectory", exc);
+            LOGGER.exiting(CLASS_NAME, "addDirectory");
+            throw exc;
+        }
         try {
             synchronized (root) {
                 Directory show = findSlideShow(slideShow);
@@ -405,9 +413,9 @@ public class SlideShowManager implements TreeModel {
     }
 
     private void updateFailed(Exception e) {
-        LOGGER.entering(CLASS_NAME, "");
+        LOGGER.entering(CLASS_NAME, "updateFailed", e);
         slideShowStore.signalStoreFailed(e);
-        LOGGER.exiting(CLASS_NAME, "");
+        LOGGER.exiting(CLASS_NAME, "updateFailed");
     }
 
     private File obtainModelDirectory() {

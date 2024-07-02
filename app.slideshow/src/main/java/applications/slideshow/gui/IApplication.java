@@ -8,4 +8,6 @@ public interface IApplication {
 
     void newSlideShowAction();
 
+    void addDirectoryAction();
+
 }

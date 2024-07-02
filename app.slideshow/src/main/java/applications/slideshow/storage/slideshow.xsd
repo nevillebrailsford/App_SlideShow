@@ -26,15 +26,15 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="title"/>
-        <xs:element ref="directories"/>
-        <xs:element ref="slideshows"/>
+        <xs:element ref="directories" maxOccurs="1" minOccurs="0"/>
+        <xs:element ref="slideshows" maxOccurs="1" minOccurs="0"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="root">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="slideshows"/>
+        <xs:element ref="slideshows" maxOccurs="unbounded" minOccurs="0"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

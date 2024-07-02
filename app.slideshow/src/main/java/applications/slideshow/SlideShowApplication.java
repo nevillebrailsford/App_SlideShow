@@ -15,18 +15,23 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.Optional;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTree;
-import javax.swing.UIDefaults;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import applications.slideshow.actions.AddDirectoryAction;
 import applications.slideshow.actions.ExitApplicationAction;
 import applications.slideshow.dialog.SlideShowPreferences;
 import applications.slideshow.gui.IApplication;
@@ -45,6 +50,11 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     private JFrame parent;
     private JButton exit;
 
+    private int currentX = 0;
+    private int currentY = 0;
+
+    private JTree tree = null;
+
     public SlideShowApplication() {
     }
 
@@ -60,7 +70,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
 
             @Override
             public boolean hasModelFile() {
-                return false;
+                return true;
             }
 
             @Override
@@ -98,19 +108,29 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         parent.setLayout(new BorderLayout());
         SlideShowMenu sm = new SlideShowMenu(this);
         parent.setJMenuBar(sm);
-        JSplitPane mainPanel = new JSplitPane();
-        add(mainPanel, BorderLayout.CENTER);
-        JTree tree = new JTree(SlideShowManager.instance());
+        tree = new JTree(SlideShowManager.instance());
         JScrollPane treeView = new JScrollPane();
-        treeView.setPreferredSize(new Dimension(300, 500));
+        treeView.setPreferredSize(new Dimension(800, 500));
         treeView.setViewportView(tree);
-        mainPanel.setLeftComponent(treeView);
+        add(treeView, BorderLayout.CENTER);
         JPanel buttonPanel = new BottomColoredPanel();
         buttonPanel.setLayout(new FlowLayout());
         exit = new JButton(new ExitApplicationAction(this));
         buttonPanel.add(exit);
         add(buttonPanel, BorderLayout.PAGE_END);
         pack();
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem(new AddDirectoryAction(this)));
+        tree.setComponentPopupMenu(menu);
+        tree.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                currentX = e.getX();
+                currentY = e.getY();
+            }
+
+        });
         LOGGER.exiting(CLASS_NAME, "start");
     }
 
@@ -119,20 +139,6 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         fc.setDialogTitle("Select which directories you'd like to view.");
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setMultiSelectionEnabled(true);
-        fc.addActionListener((e) -> {
-            if (e.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
-                File[] files = fc.getSelectedFiles();
-                new SlideShowDisplay(files);
-            } else if (e.getActionCommand().equals(JFileChooser.CANCEL_SELECTION)) {
-                shutdown();
-            }
-        });
-        UIDefaults defaults = new UIDefaults();
-        defaults.put("FileChooser.background", ApplicationConfiguration.applicationDefinition().topColor());
-        defaults.put("FileChooser.textForeground", Color.black);
-
-        fc.putClientProperty("Nimbus.Overrides.InheritDefaults", Boolean.TRUE);
-        fc.putClientProperty("Nimbus.Overrides", defaults);
         return fc;
     }
 
@@ -186,6 +192,49 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         } catch (Exception e) {
         }
         LOGGER.exiting(CLASS_NAME, "exitApplicationAction");
+    }
+
+    @Override
+    public void addDirectoryAction() {
+        LOGGER.entering(CLASS_NAME, "addDirectoryAction");
+        TreePath selPath = tree.getPathForLocation(currentX, currentY);
+        if (selPath == null) {
+            LOGGER.exiting(CLASS_NAME, "addDirectoryAction", selPath);
+            return;
+        }
+        TreeNode node = (TreeNode) selPath.getLastPathComponent();
+        Directory slideShow = (Directory) node;
+        LOGGER.fine("User chose slide show " + slideShow);
+        if (slideShow.isSlideShow()) {
+            JFileChooser jfc = createFileChooserDialog();
+            int returnValue = jfc.showOpenDialog(this);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                LOGGER.fine("User chose approve option");
+                File[] files = jfc.getSelectedFiles();
+                addDirectoriesToSlideShow(slideShow, files);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
+        }
+        LOGGER.exiting(CLASS_NAME, "addDirectoryAction");
+    }
+
+    private void addDirectoriesToSlideShow(Directory slideShow, File[] files) {
+        LOGGER.entering(CLASS_NAME, "addDirectoriesToSlideShow", files);
+        if (files.length > 0) {
+            for (File file : files) {
+                Directory dir = new Directory(file);
+                try {
+                    SlideShowManager.instance().addDirectory(slideShow, dir);
+                } catch (Throwable t) {
+                    LOGGER.fine("Caught exception " + t.getMessage());
+                    JOptionPane.showMessageDialog(this,
+                            "Unable to add " + dir + " to " + slideShow + "\n" + t.getMessage(),
+                            "Error when adding directory", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        }
+        LOGGER.exiting(CLASS_NAME, "addDirectoriesToSlideShow");
     }
 
 }
