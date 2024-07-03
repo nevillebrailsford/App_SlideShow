@@ -72,6 +72,7 @@ public class SlideShowLoad extends AbstractLoadData {
     private void process(Document document) {
         LOGGER.entering(CLASS_NAME, "process");
         processRootSlideShows(document);
+        SlideShowManager.instance().updateStorage();
         LOGGER.exiting(CLASS_NAME, "process");
     }
 
@@ -83,7 +84,7 @@ public class SlideShowLoad extends AbstractLoadData {
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element slideShowElement = (Element) node;
                 Directory slideShow = new Directory(slideShowElement);
-                SlideShowManager.instance().addSlideShow(slideShow);
+                SlideShowManager.instance().root().add(slideShow);
                 processDirectories(slideShowElement, slideShow);
                 processSlideShows(slideShowElement, slideShow);
             }
@@ -98,40 +99,57 @@ public class SlideShowLoad extends AbstractLoadData {
             Node node = list.item(index);
             if (node.getNodeName().equals(XMLConstants.DIRECTORIES)) {
                 Element directoriesElement = (Element) node;
-                processDirectory(directoriesElement, slideShow);
+                processEachDirectory(directoriesElement, slideShow);
             }
         }
         LOGGER.exiting(CLASS_NAME, "processDirectories");
     }
 
-    private void processDirectory(Element directoriesElement, Directory slideShow) {
-        LOGGER.entering(CLASS_NAME, "processDirectory");
-        NodeList list = directoriesElement.getElementsByTagName(XMLConstants.DIRECTORY);
+    private void processEachDirectory(Element directoriesElement, Directory slideShow) {
+        LOGGER.entering(CLASS_NAME, "processEachDirectory");
+        NodeList list = directoriesElement.getChildNodes();
         for (int index = 0; index < list.getLength(); index++) {
             Node node = list.item(index);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element directoryElement = (Element) node;
-                Directory directory = new Directory(directoryElement);
-                SlideShowManager.instance().addDirectory(slideShow, directory);
+            if (node.getNodeName().equals(XMLConstants.DIRECTORY)) {
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element directoryElement = (Element) node;
+                    Directory directory = new Directory(directoryElement);
+                    slideShow.add(directory);
+                }
             }
         }
-        LOGGER.exiting(CLASS_NAME, "processDirectory");
+        LOGGER.exiting(CLASS_NAME, "processEachDirectory");
     }
 
     private void processSlideShows(Element slideShowElement, Directory slideShow) {
         LOGGER.entering(CLASS_NAME, "processSlideShows");
-        NodeList list = slideShowElement.getElementsByTagName(XMLConstants.SLIDE_SHOW);
+        NodeList list = slideShowElement.getChildNodes();
         for (int index = 0; index < list.getLength(); index++) {
             Node node = list.item(index);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element nestedSlideShowElement = (Element) node;
-                Directory nestedSlideShow = new Directory(nestedSlideShowElement);
-                SlideShowManager.instance().addSlideShowTo(slideShow, nestedSlideShow);
-                processDirectories(nestedSlideShowElement, nestedSlideShow);
-                processSlideShows(nestedSlideShowElement, nestedSlideShow);
+            if (node.getNodeName().equals(XMLConstants.SLIDE_SHOWS)) {
+                Element slideShowsElement = (Element) node;
+                processEachSlideShow(slideShowsElement, slideShow);
             }
         }
         LOGGER.exiting(CLASS_NAME, "processSlideShows");
+    }
+
+    private void processEachSlideShow(Element slideShowsElement, Directory slideShow) {
+        LOGGER.entering(CLASS_NAME, "processEachSlideShow");
+        NodeList list = slideShowsElement.getChildNodes();
+        for (int index = 0; index < list.getLength(); index++) {
+            Node node = list.item(index);
+            if (node.getNodeName().equals(XMLConstants.SLIDE_SHOW)) {
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element nestedSlideShowElement = (Element) node;
+                    Directory nestedSlideShow = new Directory(nestedSlideShowElement);
+                    slideShow.add(nestedSlideShow);
+                    processDirectories(nestedSlideShowElement, nestedSlideShow);
+                    processSlideShows(nestedSlideShowElement, nestedSlideShow);
+                }
+            }
+        }
+        LOGGER.exiting(CLASS_NAME, "processEachSlideShow");
     }
 
 }

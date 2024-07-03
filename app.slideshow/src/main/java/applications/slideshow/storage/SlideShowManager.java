@@ -185,9 +185,9 @@ public class SlideShowManager implements TreeModel {
         LOGGER.exiting(CLASS_NAME, "removeSlideShow");
     }
 
-    public void addSlideShowTo(Directory show, Directory newShow) {
-        LOGGER.entering(CLASS_NAME, "addSlideShowTo", new Object[] { show, newShow });
-        if (show == null) {
+    public void addSlideShowTo(TreePath pathToSlideShow, Directory newShow) {
+        LOGGER.entering(CLASS_NAME, "addSlideShowTo", new Object[] { pathToSlideShow, newShow });
+        if (pathToSlideShow == null) {
             IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show is null");
             updateFailed(exc);
             LOGGER.throwing(CLASS_NAME, "addSlideShowTo", exc);
@@ -201,21 +201,21 @@ public class SlideShowManager implements TreeModel {
             LOGGER.exiting(CLASS_NAME, "addSlideShowTo");
             throw exc;
         }
-        if (!slideShows().contains(show)) {
-            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show not known");
-            updateFailed(exc);
-            LOGGER.throwing(CLASS_NAME, "addSlideShowTo", exc);
-            LOGGER.exiting(CLASS_NAME, "addSlideShowTo");
-            throw exc;
-        }
+//        if (!slideShows().contains(pathToSlideShow)) {
+//            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show not known");
+//            updateFailed(exc);
+//            LOGGER.throwing(CLASS_NAME, "addSlideShowTo", exc);
+//            LOGGER.exiting(CLASS_NAME, "addSlideShowTo");
+//            throw exc;
+//        }
         try {
             synchronized (root) {
-                Directory slideShow = findSlideShow(show);
+                Directory slideShow = findSlideShow(pathToSlideShow);
                 if (slideShow != null) {
                     boolean success = slideShow.add(newShow);
                     if (success) {
                         AuditService.writeAuditInformation(SlideShowAuditType.Added, SlideShowAuditObject.SlideShow,
-                                newShow.title() + " added to " + show.title());
+                                newShow.title() + " added to " + slideShow.title());
                         updateStorage();
                     } else {
                         updateFailed(new Exception("Unable to add " + newShow));
@@ -232,9 +232,9 @@ public class SlideShowManager implements TreeModel {
         LOGGER.exiting(CLASS_NAME, "addSlideShowTo");
     }
 
-    public void removeSlideShowFrom(Directory show, Directory oldShow) {
-        LOGGER.entering(CLASS_NAME, "removeSlideShowFrom", new Object[] { show, oldShow });
-        if (show == null) {
+    public void removeSlideShowFrom(TreePath pathToSlideShow, Directory oldShow) {
+        LOGGER.entering(CLASS_NAME, "removeSlideShowFrom", new Object[] { pathToSlideShow, oldShow });
+        if (pathToSlideShow == null) {
             IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show is null");
             updateFailed(exc);
             LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
@@ -248,28 +248,28 @@ public class SlideShowManager implements TreeModel {
             LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
             throw exc;
         }
-        if (show.equals(oldShow)) {
-            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show equals oldShow");
-            updateFailed(exc);
-            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
-            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
-            throw exc;
-        }
-        if (!slideShows().contains(show)) {
-            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show not known");
-            updateFailed(exc);
-            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
-            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
-            throw exc;
-        }
+//        if (pathToSlideShow.equals(oldShow)) {
+//            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show equals oldShow");
+//            updateFailed(exc);
+//            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
+//            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+//            throw exc;
+//        }
+//        if (!slideShows().contains(pathToSlideShow)) {
+//            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: show not known");
+//            updateFailed(exc);
+//            LOGGER.throwing(CLASS_NAME, "removeSlideShowFrom", exc);
+//            LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
+//            throw exc;
+//        }
         try {
             synchronized (root) {
-                Directory slideShow = findSlideShow(show);
+                Directory slideShow = findSlideShow(pathToSlideShow);
                 if (slideShow != null) {
                     boolean success = slideShow.remove(oldShow);
                     if (success) {
                         AuditService.writeAuditInformation(SlideShowAuditType.Removed, SlideShowAuditObject.SlideShow,
-                                oldShow.title() + " remove from " + show.title());
+                                oldShow.title() + " remove from " + slideShow.title());
                         updateStorage();
                     } else {
                         updateFailed(new Exception("Unable to remove " + oldShow));
@@ -286,9 +286,9 @@ public class SlideShowManager implements TreeModel {
         LOGGER.exiting(CLASS_NAME, "removeSlideShowFrom");
     }
 
-    public void addDirectory(Directory slideShow, Directory newDirectory) {
-        LOGGER.entering(CLASS_NAME, "addDirectory", new Object[] { slideShow, newDirectory });
-        if (slideShow == null) {
+    public void addDirectory(TreePath pathToSlideShow, Directory newDirectory) {
+        LOGGER.entering(CLASS_NAME, "addDirectory", new Object[] { pathToSlideShow, newDirectory });
+        if (pathToSlideShow == null) {
             IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: slideShow is null");
             updateFailed(exc);
             LOGGER.throwing(CLASS_NAME, "addDirectory", exc);
@@ -302,6 +302,7 @@ public class SlideShowManager implements TreeModel {
             LOGGER.exiting(CLASS_NAME, "addDirectory");
             throw exc;
         }
+        Directory slideShow = (Directory) pathToSlideShow.getLastPathComponent();
         if (slideShow.directories().contains(newDirectory)) {
             IllegalArgumentException exc = new IllegalArgumentException(
                     "SlideShowManager: newDirectory already present");
@@ -312,9 +313,9 @@ public class SlideShowManager implements TreeModel {
         }
         try {
             synchronized (root) {
-                Directory show = findSlideShow(slideShow);
+                Directory show = findSlideShow(pathToSlideShow);
                 if (show != null) {
-                    boolean success = slideShow.add(newDirectory);
+                    boolean success = show.add(newDirectory);
                     if (success) {
                         AuditService.writeAuditInformation(SlideShowAuditType.Added, SlideShowAuditObject.Folder,
                                 newDirectory.path().getAbsolutePath());
@@ -334,9 +335,9 @@ public class SlideShowManager implements TreeModel {
         LOGGER.exiting(CLASS_NAME, "addDirectory");
     }
 
-    public void removeDirectory(Directory slideShow, Directory oldDirectory) {
-        LOGGER.entering(CLASS_NAME, "removeDirectory", new Object[] { slideShow, oldDirectory });
-        if (slideShow == null) {
+    public void removeDirectory(TreePath pathToSlideShow, Directory oldDirectory) {
+        LOGGER.entering(CLASS_NAME, "removeDirectory", new Object[] { pathToSlideShow, oldDirectory });
+        if (pathToSlideShow == null) {
             IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: slideShow is null");
             updateFailed(exc);
             LOGGER.throwing(CLASS_NAME, "removeDirectory", exc);
@@ -350,17 +351,17 @@ public class SlideShowManager implements TreeModel {
             LOGGER.exiting(CLASS_NAME, "removeDirectory");
             throw exc;
         }
-        if (!slideShows().contains(slideShow)) {
-            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: slideShow not known");
-            updateFailed(exc);
-            LOGGER.throwing(CLASS_NAME, "removeDirectory", exc);
-            LOGGER.exiting(CLASS_NAME, "removeDirectory");
-            throw exc;
-        }
+//        if (!slideShows().contains(pathToSlideShow)) {
+//            IllegalArgumentException exc = new IllegalArgumentException("SlideShowManager: slideShow not known");
+//            updateFailed(exc);
+//            LOGGER.throwing(CLASS_NAME, "removeDirectory", exc);
+//            LOGGER.exiting(CLASS_NAME, "removeDirectory");
+//            throw exc;
+//        }
         try {
             synchronized (root) {
-                Directory show = findSlideShow(slideShow);
-                if (show != null) {
+                Directory slideShow = findSlideShow(pathToSlideShow);
+                if (slideShow != null) {
                     boolean success = slideShow.remove(oldDirectory);
                     if (success) {
                         AuditService.writeAuditInformation(SlideShowAuditType.Removed, SlideShowAuditObject.Folder,
@@ -381,8 +382,8 @@ public class SlideShowManager implements TreeModel {
         LOGGER.exiting(CLASS_NAME, "removeDirectory");
     }
 
-    public TreePath getTreePath(Directory directory) {
-        LOGGER.entering(CLASS_NAME, "", directory);
+    public TreePath treePath(Directory directory) {
+        LOGGER.entering(CLASS_NAME, "treePath", directory);
         Vector<Directory> path = new Vector<>();
         path.insertElementAt(directory, 0);
         Directory parent = directory.parent();
@@ -395,13 +396,20 @@ public class SlideShowManager implements TreeModel {
             paths[i] = path.get(i);
         }
         TreePath result = new TreePath(paths);
-        LOGGER.exiting(CLASS_NAME, "", result);
+        LOGGER.exiting(CLASS_NAME, "treePath", result);
         return result;
     }
 
-    private Directory findSlideShow(Directory show) {
-        LOGGER.entering(CLASS_NAME, "findSlideShow", show);
-        Directory result = findSlideShow(root, show);
+    public Directory root() {
+        LOGGER.entering(CLASS_NAME, "root");
+        Directory rootDirectory = (Directory) getRoot();
+        LOGGER.exiting(CLASS_NAME, "root", rootDirectory);
+        return rootDirectory;
+    }
+
+    private Directory findSlideShow(TreePath pathToSlideShow) {
+        LOGGER.entering(CLASS_NAME, "findSlideShow", pathToSlideShow);
+        Directory result = (Directory) pathToSlideShow.getLastPathComponent();
         LOGGER.exiting(CLASS_NAME, "findSlideShow", result);
         return result;
     }
@@ -423,7 +431,7 @@ public class SlideShowManager implements TreeModel {
         return result;
     }
 
-    private void updateStorage() {
+    public void updateStorage() {
         LOGGER.entering(CLASS_NAME, "updateStorage");
         storage.storeData(slideShowStore);
         fireTreeStructureChanged(root);

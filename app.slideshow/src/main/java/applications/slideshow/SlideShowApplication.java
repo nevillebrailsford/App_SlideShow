@@ -15,11 +15,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.Optional;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -29,6 +31,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import applications.slideshow.actions.AddDirectoryAction;
@@ -41,7 +45,7 @@ import applications.slideshow.model.Directory;
 import applications.slideshow.storage.SlideShowLoad;
 import applications.slideshow.storage.SlideShowManager;
 
-public class SlideShowApplication extends ApplicationBaseForGUI implements IApplication {
+public class SlideShowApplication extends ApplicationBaseForGUI implements IApplication, TreeModelListener {
     private static final long serialVersionUID = 1L;
     private static final String CLASS_NAME = SlideShowApplication.class.getName();
 
@@ -133,15 +137,12 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             }
 
         });
+        SlideShowManager.instance().addTreeModelListener(this);
+        expandAllNodes(tree, 0, tree.getRowCount());
+        ImageIcon dirIcon = createImageIcon("directory-64.png");
+        ImageIcon showIcon = createImageIcon("slide-show-64.png");
+        tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
         LOGGER.exiting(CLASS_NAME, "start");
-    }
-
-    private JFileChooser createFileChooserDialog() {
-        JFileChooser fc = new JFileChooser(HOME);
-        fc.setDialogTitle("Select which directories you'd like to view.");
-        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fc.setMultiSelectionEnabled(true);
-        return fc;
     }
 
     @Override
@@ -213,7 +214,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 LOGGER.fine("User chose approve option");
                 File[] files = jfc.getSelectedFiles();
-                addDirectoriesToSlideShow(slideShow, files);
+                addDirectoriesToSlideShow(selPath, files);
             }
         } else {
             JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
@@ -221,18 +222,20 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         LOGGER.exiting(CLASS_NAME, "addDirectoryAction");
     }
 
-    private void addDirectoriesToSlideShow(Directory slideShow, File[] files) {
+    private void addDirectoriesToSlideShow(TreePath pathToSlideShow, File[] files) {
         LOGGER.entering(CLASS_NAME, "addDirectoriesToSlideShow", files);
         if (files.length > 0) {
             for (File file : files) {
                 Directory dir = new Directory(file);
                 try {
-                    SlideShowManager.instance().addDirectory(slideShow, dir);
+                    SlideShowManager.instance().addDirectory(pathToSlideShow, dir);
                 } catch (Throwable t) {
                     LOGGER.fine("Caught exception " + t.getMessage());
-                    JOptionPane.showMessageDialog(this,
-                            "Unable to add " + dir + " to " + slideShow + "\n" + t.getMessage(),
-                            "Error when adding directory", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane
+                            .showMessageDialog(this,
+                                    "Unable to add " + dir + " to " + pathToSlideShow.getLastPathComponent() + "\n"
+                                            + t.getMessage(),
+                                    "Error when adding directory", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
@@ -254,12 +257,61 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             String title = JOptionPane.showInputDialog("Please enter slide show title:  ");
             LOGGER.fine("User entered " + title);
             Directory newSlideShow = new Directory(title);
-            SlideShowManager.instance().addSlideShowTo(slideShow, newSlideShow);
+            SlideShowManager.instance().addSlideShowTo(selPath, newSlideShow);
         } else {
             JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
         }
 
         LOGGER.exiting(CLASS_NAME, "addSlideShowToAction");
+    }
+
+    private static ImageIcon createImageIcon(String path) {
+        java.net.URL imgURL = SlideShowApplication.class.getResource(path);
+        if (imgURL != null) {
+            ImageIcon result = new ImageIcon(imgURL);
+            Image image = result.getImage();
+            Image newImage = image.getScaledInstance(24, 24, java.awt.Image.SCALE_SMOOTH);
+            result = new ImageIcon(newImage);
+            return result;
+        } else {
+            System.err.println("Couldn't find file: " + path);
+            return null;
+        }
+    }
+
+    private JFileChooser createFileChooserDialog() {
+        JFileChooser fc = new JFileChooser(HOME);
+        fc.setDialogTitle("Select which directories you'd like to view.");
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setMultiSelectionEnabled(true);
+        return fc;
+    }
+
+    @Override
+    public void treeNodesChanged(TreeModelEvent e) {
+    }
+
+    @Override
+    public void treeNodesInserted(TreeModelEvent e) {
+    }
+
+    @Override
+    public void treeNodesRemoved(TreeModelEvent e) {
+    }
+
+    @Override
+    public void treeStructureChanged(TreeModelEvent e) {
+        expandAllNodes(tree, 0, tree.getRowCount());
+    }
+
+    private void expandAllNodes(JTree tree, int startingIndex, int rowCount) {
+        for (int i = startingIndex; i < rowCount; ++i) {
+            tree.expandRow(i);
+        }
+
+        if (tree.getRowCount() != rowCount) {
+            expandAllNodes(tree, rowCount, tree.getRowCount());
+        }
     }
 
 }

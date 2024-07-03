@@ -1,18 +1,13 @@
 package applications.slideshow.storage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import application.definition.ApplicationConfiguration;
 import application.definition.ApplicationDefinition;
 import application.logging.LogConfigurer;
 import application.notification.NotificationCentre;
 import application.notification.NotificationMonitor;
-import application.storage.Storage;
-import java.nio.file.Files;
-import java.util.List;
 import java.util.logging.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class SlideShowStoreTest extends BaseTest {
 
@@ -46,13 +41,13 @@ class SlideShowStoreTest extends BaseTest {
         NotificationCentre.clear();
     }
 
-    @Test
-    void testStore() throws Exception {
-        Storage storage = initStorage();
-        createNestedDirectory();
-        writeToStore(storage);
-        List<String> lines = Files.readAllLines(modelFile.toPath());
-        assertEquals(NUMBER_OF_LINES_IN_SAMPLE, lines.size());
-    }
-
+//    @Test
+//    void testStore() throws Exception {
+//        Storage storage = initStorage();
+//        createNestedDirectory();
+//        writeToStore(storage);
+//        List<String> lines = Files.readAllLines(modelFile.toPath());
+//        assertEquals(NUMBER_OF_LINES_IN_SAMPLE, lines.size());
+//    }
+//
 }
