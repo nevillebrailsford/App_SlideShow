@@ -32,6 +32,7 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import applications.slideshow.actions.AddDirectoryAction;
+import applications.slideshow.actions.AddSlideShowToAction;
 import applications.slideshow.actions.ExitApplicationAction;
 import applications.slideshow.dialog.SlideShowPreferences;
 import applications.slideshow.gui.IApplication;
@@ -121,6 +122,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         pack();
         JPopupMenu menu = new JPopupMenu();
         menu.add(new JMenuItem(new AddDirectoryAction(this)));
+        menu.add(new JMenuItem(new AddSlideShowToAction(this)));
         tree.setComponentPopupMenu(menu);
         tree.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -235,6 +237,29 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             }
         }
         LOGGER.exiting(CLASS_NAME, "addDirectoriesToSlideShow");
+    }
+
+    @Override
+    public void addSlideShowToAction() {
+        LOGGER.entering(CLASS_NAME, "addSlideShowToAction");
+        TreePath selPath = tree.getPathForLocation(currentX, currentY);
+        if (selPath == null) {
+            LOGGER.exiting(CLASS_NAME, "addSlideShowToAction", selPath);
+            return;
+        }
+        TreeNode node = (TreeNode) selPath.getLastPathComponent();
+        Directory slideShow = (Directory) node;
+        LOGGER.fine("User chose slide show " + slideShow);
+        if (slideShow.isSlideShow()) {
+            String title = JOptionPane.showInputDialog("Please enter slide show title:  ");
+            LOGGER.fine("User entered " + title);
+            Directory newSlideShow = new Directory(title);
+            SlideShowManager.instance().addSlideShowTo(slideShow, newSlideShow);
+        } else {
+            JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
+        }
+
+        LOGGER.exiting(CLASS_NAME, "addSlideShowToAction");
     }
 
 }

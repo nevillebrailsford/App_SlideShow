@@ -10,4 +10,6 @@ public interface IApplication {
 
     void addDirectoryAction();
 
+    void addSlideShowToAction();
+
 }

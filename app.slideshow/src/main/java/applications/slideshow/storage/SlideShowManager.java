@@ -381,6 +381,24 @@ public class SlideShowManager implements TreeModel {
         LOGGER.exiting(CLASS_NAME, "removeDirectory");
     }
 
+    public TreePath getTreePath(Directory directory) {
+        LOGGER.entering(CLASS_NAME, "", directory);
+        Vector<Directory> path = new Vector<>();
+        path.insertElementAt(directory, 0);
+        Directory parent = directory.parent();
+        while (parent != null) {
+            path.insertElementAt(parent, 0);
+            parent = parent.parent();
+        }
+        Directory[] paths = new Directory[path.size()];
+        for (int i = 0; i < path.size(); i++) {
+            paths[i] = path.get(i);
+        }
+        TreePath result = new TreePath(paths);
+        LOGGER.exiting(CLASS_NAME, "", result);
+        return result;
+    }
+
     private Directory findSlideShow(Directory show) {
         LOGGER.entering(CLASS_NAME, "findSlideShow", show);
         Directory result = findSlideShow(root, show);

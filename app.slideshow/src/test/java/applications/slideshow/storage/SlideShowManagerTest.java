@@ -11,6 +11,7 @@ import application.notification.NotificationCentre;
 import application.notification.NotificationMonitor;
 import java.io.File;
 import java.util.logging.Level;
+import javax.swing.tree.TreePath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,6 +83,21 @@ class SlideShowManagerTest extends BaseTest {
         assertNotNull(SlideShowManager.instance().getRoot());
         Directory root = (Directory) SlideShowManager.instance().getRoot();
         assertEquals("Slide shows", root.title());
+    }
+
+    @Test
+    void testGetTreePathForRoot() {
+        Directory root = (Directory) SlideShowManager.instance().getRoot();
+        TreePath path = SlideShowManager.instance().getTreePath(root);
+        assertEquals(1, path.getPathCount());
+    }
+
+    @Test
+    void testGetTreePathForSlideShow() throws Exception {
+        addASlideShow(slideShow);
+        Directory ss = SlideShowManager.instance().slideShows().get(0);
+        TreePath path = SlideShowManager.instance().getTreePath(ss);
+        assertEquals(2, path.getPathCount());
     }
 
     @Test

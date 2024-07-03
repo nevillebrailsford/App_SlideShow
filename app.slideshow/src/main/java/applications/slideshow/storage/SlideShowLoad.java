@@ -93,7 +93,20 @@ public class SlideShowLoad extends AbstractLoadData {
 
     private void processDirectories(Element slideShowElement, Directory slideShow) {
         LOGGER.entering(CLASS_NAME, "processDirectories");
-        NodeList list = slideShowElement.getElementsByTagName(XMLConstants.DIRECTORY);
+        NodeList list = slideShowElement.getChildNodes();
+        for (int index = 0; index < list.getLength(); index++) {
+            Node node = list.item(index);
+            if (node.getNodeName().equals(XMLConstants.DIRECTORIES)) {
+                Element directoriesElement = (Element) node;
+                processDirectory(directoriesElement, slideShow);
+            }
+        }
+        LOGGER.exiting(CLASS_NAME, "processDirectories");
+    }
+
+    private void processDirectory(Element directoriesElement, Directory slideShow) {
+        LOGGER.entering(CLASS_NAME, "processDirectory");
+        NodeList list = directoriesElement.getElementsByTagName(XMLConstants.DIRECTORY);
         for (int index = 0; index < list.getLength(); index++) {
             Node node = list.item(index);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -102,7 +115,7 @@ public class SlideShowLoad extends AbstractLoadData {
                 SlideShowManager.instance().addDirectory(slideShow, directory);
             }
         }
-        LOGGER.exiting(CLASS_NAME, "processDirectories");
+        LOGGER.exiting(CLASS_NAME, "processDirectory");
     }
 
     private void processSlideShows(Element slideShowElement, Directory slideShow) {

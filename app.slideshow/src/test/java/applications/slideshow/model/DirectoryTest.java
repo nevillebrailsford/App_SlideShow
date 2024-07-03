@@ -105,6 +105,54 @@ class DirectoryTest {
     }
 
     @Test
+    void testCopyDirectory() {
+        Directory copy = directory.copy();
+        assertNotNull(copy);
+        assertFalse(directory == copy);
+        assertTrue(directory.equals(copy));
+        assertTrue(copy.isDirectory());
+    }
+
+    @Test
+    void testCopySlideShow() {
+        Directory copy = slideShow.copy();
+        assertNotNull(copy);
+        assertFalse(slideShow == copy);
+        assertTrue(slideShow.equals(copy));
+        assertTrue(copy.isSlideShow());
+        assertEquals(slideShow.allDirectories().size(), copy.allDirectories().size());
+        assertEquals(slideShow.directories().size(), copy.directories().size());
+        assertEquals(slideShow.slideShows().size(), copy.slideShows().size());
+    }
+
+    @Test
+    void testCopySlideShowOneDirectory() {
+        Directory copy = slideShow.copy();
+        copy.add(directory);
+        assertEquals(1, copy.allDirectories().size());
+        assertEquals(0, copy.slideShows().size());
+        assertEquals(1, copy.directories().size());
+        Directory copy2 = copy.copy();
+        assertEquals(copy.allDirectories().size(), copy2.allDirectories().size());
+        assertEquals(copy.directories().size(), copy2.directories().size());
+        assertEquals(copy.slideShows().size(), copy2.slideShows().size());
+    }
+
+    @Test
+    void testCopySlideShowOneSlideShow() {
+        Directory ss1 = new Directory("test1");
+        Directory ss2 = new Directory("test2");
+        ss1.add(ss2);
+        assertEquals(1, ss1.allDirectories().size());
+        assertEquals(1, ss1.slideShows().size());
+        assertEquals(0, ss1.directories().size());
+        Directory ss3 = ss1.copy();
+        assertEquals(ss1.allDirectories().size(), ss3.allDirectories().size());
+        assertEquals(ss1.directories().size(), ss3.directories().size());
+        assertEquals(ss1.slideShows().size(), ss3.slideShows().size());
+    }
+
+    @Test
     void testAddDirectoryToSlideShow() {
         assertEquals(0, slideShow.totalNumberOfDirectories());
         assertEquals(0, slideShow.numberOfDirectories());

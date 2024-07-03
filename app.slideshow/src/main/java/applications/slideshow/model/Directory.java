@@ -118,6 +118,28 @@ public class Directory implements Comparable<Directory>, TreeNode {
     }
 
     /**
+     * Build a copy of this object, including copies of any directories or slide
+     * shows contained within it.
+     * 
+     * @return a copy of the original
+     */
+    public Directory copy() {
+        Directory result = null;
+        if (isDirectory) {
+            result = new Directory(path);
+        } else {
+            result = new Directory(title);
+            for (Directory directory : directories()) {
+                result.add(directory.copy());
+            }
+            for (Directory slideShow : slideShows()) {
+                result.add(slideShow.copy());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Tests whether the directory denoted by this object is a directory.
      * 
      * @return true if and only if this directory is a directory; false otherwise
@@ -139,7 +161,7 @@ public class Directory implements Comparable<Directory>, TreeNode {
         if (isDirectory) {
             return false;
         }
-        if (this.equals(directory)) {
+        if (this == directory) {
             return false;
         }
         if (directory.isSlideShow()) {
@@ -154,6 +176,12 @@ public class Directory implements Comparable<Directory>, TreeNode {
         return store.add(directory);
     }
 
+    /**
+     * Remove a directory from the tree.
+     * 
+     * @param directory - the directory to be removed
+     * @return true if the directory was removed successfully, false otherwise
+     */
     public boolean remove(Directory directory) {
         if (isDirectory) {
             return false;
@@ -161,14 +189,29 @@ public class Directory implements Comparable<Directory>, TreeNode {
         return store.remove(directory);
     }
 
+    /**
+     * Get the parent of this directory.
+     * 
+     * @return the parent, or null if requested on the root
+     */
     public Directory parent() {
         return parent;
     }
 
+    /**
+     * Identify the parent of this object
+     * 
+     * @param parent - a directory in which this object is contained
+     */
     public void setParent(Directory parent) {
         this.parent = parent;
     }
 
+    /**
+     * Get the title
+     * 
+     * @return a string if the object is a slide show, otherwise null
+     */
     public String title() {
         if (isSlideShow) {
             return title;
@@ -176,6 +219,11 @@ public class Directory implements Comparable<Directory>, TreeNode {
         return null;
     }
 
+    /**
+     * Get the path
+     * 
+     * @return a file if the object is a directory, null otherwise
+     */
     public File path() {
         if (isDirectory) {
             return path;
@@ -183,6 +231,12 @@ public class Directory implements Comparable<Directory>, TreeNode {
         return null;
     }
 
+    /**
+     * Count the total number of child directories, including both directories and
+     * slide shows
+     * 
+     * @return an int containing the number of children
+     */
     public int totalNumberOfDirectories() {
         if (isSlideShow) {
             return store.size();
@@ -310,6 +364,9 @@ public class Directory implements Comparable<Directory>, TreeNode {
         } else {
             for (Directory dir : slideShows()) {
                 result = result || dir.contains(directory);
+                if (result) {
+                    break;
+                }
             }
         }
         return result;
