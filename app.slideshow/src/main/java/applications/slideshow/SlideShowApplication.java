@@ -82,7 +82,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             public Optional<Color> bottomColor() {
                 String bottom = IniFile.value(GUIConstants.BOTTOM_COLOR);
                 if (bottom.isEmpty() || bottom.equals("default")) {
-                    bottom = "teal";
+                    bottom = "lightsteelblue";
                     IniFile.store(GUIConstants.BOTTOM_COLOR, bottom);
                 }
                 Color bottomColor = ColorProvider.get(bottom);
@@ -93,7 +93,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             public Optional<Color> topColor() {
                 String top = IniFile.value(GUIConstants.TOP_COLOR);
                 if (top.isEmpty() || top.equals("default")) {
-                    top = "lightskyblue";
+                    top = "lightcyan";
                     IniFile.store(GUIConstants.TOP_COLOR, top);
                 }
                 Color topColor = ColorProvider.get(top);
@@ -167,6 +167,8 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     public void preferencesAction() {
         LOGGER.entering(CLASS_NAME, "preferencesAction");
         PreferencesDialog dialog = new SlideShowPreferences(parent);
+        dialog.dispose();
+        dialog = new SlideShowPreferences(parent);
         dialog.setVisible(true);
         dialog.dispose();
         LOGGER.exiting(CLASS_NAME, "preferencesAction");
