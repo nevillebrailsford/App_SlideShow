@@ -1,6 +1,7 @@
 package applications.slideshow.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import application.definition.ApplicationConfiguration;
@@ -36,6 +37,7 @@ class SlideShowManagerTest extends BaseTest {
         NotificationCentre.addListener(listener);
         if (runMonitor)
             new NotificationMonitor(System.out);
+
     }
 
     @AfterEach
@@ -123,18 +125,18 @@ class SlideShowManagerTest extends BaseTest {
         assertTrue(SlideShowManager.instance().isLeaf(child));
     }
 
-//    @Test
-//    void testIsDirectoryLeaf() throws Exception {
-//        addASlideShow(slideShow);
-//        addADirectory(slideShow, directory);
-//        Directory root = SlideShowManager.instance().root();
-//        Directory child = (Directory) SlideShowManager.instance().getChild(root, 0);
-//        assertFalse(SlideShowManager.instance().isLeaf(child));
-//        assertEquals(1, child.directories().size());
-//        Directory leaf = child.directories().get(0);
-//        assertTrue(SlideShowManager.instance().isLeaf(leaf));
-//    }
-//
+    @Test
+    void testIsDirectoryLeaf() throws Exception {
+        addASlideShow(slideShow);
+        addADirectory(SlideShowManager.instance().treePath(slideShow), directory);
+        Directory root = SlideShowManager.instance().root();
+        Directory child = (Directory) SlideShowManager.instance().getChild(root, 0);
+        assertFalse(SlideShowManager.instance().isLeaf(child));
+        assertEquals(1, child.directories().size());
+        Directory leaf = child.directories().get(0);
+        assertTrue(SlideShowManager.instance().isLeaf(leaf));
+    }
+
     @Test
     void testgetIndexOfChild() throws Exception {
         addASlideShow(slideShow);

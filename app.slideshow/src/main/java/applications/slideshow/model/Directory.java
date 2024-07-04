@@ -157,6 +157,13 @@ public class Directory implements Comparable<Directory>, TreeNode {
         return isSlideShow;
     }
 
+    /**
+     * Add a directory to this slide show. A directory can only be added to a slide
+     * show.
+     * 
+     * @param directory to be added
+     * @return true is successfully added, false otherwise.
+     */
     public boolean add(Directory directory) {
         if (isDirectory) {
             return false;
@@ -245,6 +252,12 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Get a list of all child directories, including both directories and slide
+     * shows
+     * 
+     * @return a list of directories
+     */
     public List<Directory> allDirectories() {
         if (isSlideShow) {
             return store.stream().sorted().collect(Collectors.toList());
@@ -253,6 +266,11 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Count the total number of child slide shows.
+     * 
+     * @return an int containing the number of child slide shows
+     */
     public int numberOfSlideShows() {
         if (isSlideShow) {
             return slideShows().size();
@@ -261,6 +279,11 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Get a list of child slide shows.
+     * 
+     * @return a list of directories
+     */
     public List<Directory> slideShows() {
         if (isSlideShow) {
             return store.stream().filter((d) -> d.isSlideShow()).sorted().collect(Collectors.toList());
@@ -269,6 +292,11 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Count the total number of child directories.
+     * 
+     * @return an int containing the number of child directories
+     */
     public int numberOfDirectories() {
         if (isSlideShow) {
             return directories().size();
@@ -277,6 +305,11 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Get a list of child directories.
+     * 
+     * @return a list of directories
+     */
     public List<Directory> directories() {
         if (isSlideShow) {
             return store.stream().filter((d) -> d.isDirectory()).sorted().collect(Collectors.toList());
@@ -285,6 +318,9 @@ public class Directory implements Comparable<Directory>, TreeNode {
         }
     }
 
+    /**
+     * Clears the slide show of all children.
+     */
     public void clear() {
         if (isSlideShow) {
             store.clear();

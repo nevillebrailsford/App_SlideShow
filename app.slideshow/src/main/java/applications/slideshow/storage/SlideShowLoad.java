@@ -72,7 +72,6 @@ public class SlideShowLoad extends AbstractLoadData {
     private void process(Document document) {
         LOGGER.entering(CLASS_NAME, "process");
         processRootSlideShows(document);
-        SlideShowManager.instance().updateStorage();
         LOGGER.exiting(CLASS_NAME, "process");
     }
 
