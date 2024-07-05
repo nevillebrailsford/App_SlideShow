@@ -4,19 +4,19 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import applications.slideshow.gui.IApplication;
 
-public class NewSlideShowAction extends AbstractAction {
+public class StartSlideShowAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
     private IApplication application;
 
-    public NewSlideShowAction(IApplication application) {
-        super("New Slide Show");
+    public StartSlideShowAction(IApplication application) {
+        super("Start slide show");
         this.application = application;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        application.newSlideShowAction();
+        application.startSlideShowAction();
     }
 
 }

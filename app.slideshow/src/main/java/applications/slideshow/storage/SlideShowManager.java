@@ -59,7 +59,6 @@ public class SlideShowManager implements TreeModel {
         dataFile = new File(modelDirectory, ModelConstants.SLIDE_SHOW_FILE);
         slideShowStore.setFileName(dataFile.getAbsolutePath());
         storage = new Storage();
-
         LOGGER.exiting(CLASS_NAME, "cinit");
     }
 
@@ -381,6 +380,37 @@ public class SlideShowManager implements TreeModel {
         TreePath result = new TreePath(paths);
         LOGGER.exiting(CLASS_NAME, "treePath", result);
         return result;
+    }
+
+    public File[] files(TreePath ss) {
+        LOGGER.entering(CLASS_NAME, "files", ss);
+        File[] files = null;
+        Directory theSlideShow = (Directory) ss.getLastPathComponent();
+        if (theSlideShow.isSlideShow()) {
+            List<Directory> directories = theSlideShow.directories();
+            for (Directory d : theSlideShow.slideShows()) {
+                directories.addAll(files(d));
+            }
+            files = new File[directories.size()];
+            for (int i = 0; i < directories.size(); i++) {
+                files[i] = directories.get(i).path();
+            }
+        } else {
+            files = new File[1];
+            files[0] = theSlideShow.path();
+        }
+        LOGGER.exiting(CLASS_NAME, "files", files);
+        return files;
+    }
+
+    public List<Directory> files(Directory ss) {
+        LOGGER.entering(CLASS_NAME, "files", ss);
+        List<Directory> directories = ss.directories();
+        for (Directory d : ss.slideShows()) {
+            directories.addAll(files(d));
+        }
+        LOGGER.exiting(CLASS_NAME, "files", directories);
+        return directories;
     }
 
     public Directory root() {

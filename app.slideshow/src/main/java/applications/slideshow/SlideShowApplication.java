@@ -6,11 +6,13 @@ import application.base.app.gui.BottomColoredPanel;
 import application.base.app.gui.ColorProvider;
 import application.base.app.gui.GUIConstants;
 import application.base.app.gui.PreferencesDialog;
+import application.change.ChangeManager;
 import application.definition.ApplicationConfiguration;
 import application.definition.ApplicationDefinition;
 import application.inifile.IniFile;
 import application.storage.LoadData;
 import application.storage.StoreDetails;
+import application.thread.ThreadServices;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -35,9 +37,14 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import applications.slideshow.actions.AddDirectoryAction;
 import applications.slideshow.actions.AddSlideShowToAction;
 import applications.slideshow.actions.ExitApplicationAction;
+import applications.slideshow.actions.StartSlideShowAction;
+import applications.slideshow.change.AddDirectoryChange;
+import applications.slideshow.change.AddSlideShowChange;
+import applications.slideshow.change.AddSlideShowToChange;
 import applications.slideshow.dialog.SlideShowPreferences;
 import applications.slideshow.gui.IApplication;
 import applications.slideshow.gui.SlideShowMenu;
@@ -114,6 +121,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         SlideShowMenu sm = new SlideShowMenu(this);
         parent.setJMenuBar(sm);
         tree = new JTree(SlideShowManager.instance());
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JScrollPane treeView = new JScrollPane();
         treeView.setPreferredSize(new Dimension(800, 500));
         treeView.setViewportView(tree);
@@ -127,6 +135,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         JPopupMenu menu = new JPopupMenu();
         menu.add(new JMenuItem(new AddDirectoryAction(this)));
         menu.add(new JMenuItem(new AddSlideShowToAction(this)));
+        menu.add(new JMenuItem(new StartSlideShowAction(this)));
         tree.setComponentPopupMenu(menu);
         tree.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -135,10 +144,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
                 currentX = e.getX();
                 currentY = e.getY();
             }
-
         });
         SlideShowManager.instance().addTreeModelListener(this);
         expandAllNodes(tree, 0, tree.getRowCount());
+        tree.clearSelection();
         ImageIcon dirIcon = createImageIcon("directory-64.png");
         ImageIcon showIcon = createImageIcon("slide-show-64.png");
         tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
@@ -175,28 +184,21 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     }
 
     @Override
-    public void newSlideShowAction() {
-        LOGGER.entering(HOME, "newSlideShowAction");
+    public void addSlideShowAction() {
+        LOGGER.entering(HOME, "addSlideShowAction");
         String title = JOptionPane.showInputDialog(this, "Please provide a title");
         if (title != null && !title.isEmpty()) {
             try {
                 Directory newShow = new Directory(title);
-                SlideShowManager.instance().addSlideShow(newShow);
+                AddSlideShowChange addSlideShowChange = new AddSlideShowChange(newShow);
+                ThreadServices.instance().executor().submit(() -> {
+                    ChangeManager.instance().execute(addSlideShowChange);
+                });
             } catch (Throwable e) {
                 System.out.println(e);
             }
         }
-        LOGGER.exiting(HOME, "newSlideShowAction");
-    }
-
-    @Override
-    public void exitApplicationAction() {
-        LOGGER.entering(CLASS_NAME, "exitApplicationAction");
-        try {
-            shutdown();
-        } catch (Exception e) {
-        }
-        LOGGER.exiting(CLASS_NAME, "exitApplicationAction");
+        LOGGER.exiting(HOME, "addSlideShowAction");
     }
 
     @Override
@@ -216,32 +218,15 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 LOGGER.fine("User chose approve option");
                 File[] files = jfc.getSelectedFiles();
-                addDirectoriesToSlideShow(selPath, files);
+                AddDirectoryChange addDirectoryChange = new AddDirectoryChange(selPath, files);
+                ThreadServices.instance().executor().submit(() -> {
+                    ChangeManager.instance().execute(addDirectoryChange);
+                });
             }
         } else {
             JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
         }
         LOGGER.exiting(CLASS_NAME, "addDirectoryAction");
-    }
-
-    private void addDirectoriesToSlideShow(TreePath pathToSlideShow, File[] files) {
-        LOGGER.entering(CLASS_NAME, "addDirectoriesToSlideShow", files);
-        if (files.length > 0) {
-            for (File file : files) {
-                Directory dir = new Directory(file);
-                try {
-                    SlideShowManager.instance().addDirectory(pathToSlideShow, dir);
-                } catch (Throwable t) {
-                    LOGGER.fine("Caught exception " + t.getMessage());
-                    JOptionPane
-                            .showMessageDialog(this,
-                                    "Unable to add " + dir + " to " + pathToSlideShow.getLastPathComponent() + "\n"
-                                            + t.getMessage(),
-                                    "Error when adding directory", JOptionPane.INFORMATION_MESSAGE);
-                }
-            }
-        }
-        LOGGER.exiting(CLASS_NAME, "addDirectoriesToSlideShow");
     }
 
     @Override
@@ -259,12 +244,51 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             String title = JOptionPane.showInputDialog("Please enter slide show title:  ");
             LOGGER.fine("User entered " + title);
             Directory newSlideShow = new Directory(title);
-            SlideShowManager.instance().addSlideShowTo(selPath, newSlideShow);
+            AddSlideShowToChange addSlideShowToChange = new AddSlideShowToChange(selPath, newSlideShow);
+            ThreadServices.instance().executor().submit(() -> {
+                ChangeManager.instance().execute(addSlideShowToChange);
+            });
         } else {
             JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
         }
 
         LOGGER.exiting(CLASS_NAME, "addSlideShowToAction");
+    }
+
+    @Override
+    public void startSlideShowAction() {
+        LOGGER.entering(CLASS_NAME, "startSlideShowAction");
+        TreePath selPath = null;
+        File[] files = null;
+        if (tree.getSelectionCount() == 0) {
+            if (currentX > 0 && currentY > 0) {
+                selPath = tree.getPathForLocation(currentX, currentY);
+            }
+        } else {
+            selPath = tree.getSelectionPath();
+        }
+        if (selPath == null) {
+            JOptionPane.showMessageDialog(this, "Nothing selected");
+            LOGGER.exiting(CLASS_NAME, "startSlideShowAction");
+            return;
+        }
+        files = SlideShowManager.instance().files(selPath);
+        if (files.length > 0) {
+            SlideShowDisplay sh = new SlideShowDisplay(files);
+        } else {
+            JOptionPane.showMessageDialog(this, "Nothing to display");
+        }
+        LOGGER.exiting(CLASS_NAME, "startSlideShowAction");
+    }
+
+    @Override
+    public void exitApplicationAction() {
+        LOGGER.entering(CLASS_NAME, "exitApplicationAction");
+        try {
+            shutdown();
+        } catch (Exception e) {
+        }
+        LOGGER.exiting(CLASS_NAME, "exitApplicationAction");
     }
 
     private static ImageIcon createImageIcon(String path) {

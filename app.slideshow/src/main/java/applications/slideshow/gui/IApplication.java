@@ -6,10 +6,11 @@ public interface IApplication {
 
     void preferencesAction();
 
-    void newSlideShowAction();
+    void addSlideShowAction();
 
     void addDirectoryAction();
 
     void addSlideShowToAction();
 
+    void startSlideShowAction();
 }
