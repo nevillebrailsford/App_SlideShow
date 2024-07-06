@@ -7,8 +7,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import applications.slideshow.actions.AddSlideShowAction;
 import applications.slideshow.actions.ExitApplicationAction;
+import applications.slideshow.actions.PauseSlideShowAction;
 import applications.slideshow.actions.PreferencesAction;
+import applications.slideshow.actions.ResumeSlideShowAction;
 import applications.slideshow.actions.StartSlideShowAction;
+import applications.slideshow.actions.StopSlideShowAction;
 
 public class SlideShowMenu extends JMenuBar {
     private static final long serialVersionUID = 1L;
@@ -37,6 +40,7 @@ public class SlideShowMenu extends JMenuBar {
     private JMenu slideShowMenu = new JMenu("Slide Show");
     private JMenuItem startItem;
     private JMenuItem pauseItem;
+    private JMenuItem resumeItem;
     private JMenuItem stopItem;
 
     public SlideShowMenu(IApplication application) {
@@ -72,10 +76,12 @@ public class SlideShowMenu extends JMenuBar {
         viewMenu.add(expandItem);
 
         startItem = new JMenuItem(new StartSlideShowAction(application));
-        pauseItem = new JMenuItem("Pause");
-        stopItem = new JMenuItem("Stop");
+        pauseItem = new JMenuItem(new PauseSlideShowAction(application));
+        resumeItem = new JMenuItem(new ResumeSlideShowAction(application));
+        stopItem = new JMenuItem(new StopSlideShowAction(application));
         slideShowMenu.add(startItem);
         slideShowMenu.add(pauseItem);
+        slideShowMenu.add(resumeItem);
         slideShowMenu.add(stopItem);
 
         LOGGER.exiting(CLASS_NAME, "init");

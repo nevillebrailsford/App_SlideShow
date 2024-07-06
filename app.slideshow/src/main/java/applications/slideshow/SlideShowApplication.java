@@ -67,6 +67,8 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
 
     private JTree tree = null;
 
+    private SlideShowDisplay slideShowDisplay = null;
+
     public SlideShowApplication() {
     }
 
@@ -274,7 +276,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         }
         files = SlideShowManager.instance().files(selPath);
         if (files.length > 0) {
-            SlideShowDisplay sh = new SlideShowDisplay(files);
+            slideShowDisplay = new SlideShowDisplay(files);
         } else {
             JOptionPane.showMessageDialog(this, "Nothing to display");
         }
@@ -282,9 +284,34 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     }
 
     @Override
+    public void pauseSlideShowAction() {
+        LOGGER.entering(CLASS_NAME, "pauseSlideShowAction");
+        slideShowDisplay.pause();
+        LOGGER.exiting(CLASS_NAME, "pauseSlideShowAction");
+    }
+
+    @Override
+    public void resumeSlideShowAction() {
+        LOGGER.entering(CLASS_NAME, "resumeSlideShowAction");
+        slideShowDisplay.resume();
+        LOGGER.exiting(CLASS_NAME, "resumeSlideShowAction");
+    }
+
+    @Override
+    public void stopSlideShowAction() {
+        LOGGER.entering(CLASS_NAME, "stopSlideShowAction");
+        slideShowDisplay.stopShow();
+        slideShowDisplay = null;
+        LOGGER.exiting(CLASS_NAME, "stopSlideShowAction");
+    }
+
+    @Override
     public void exitApplicationAction() {
         LOGGER.entering(CLASS_NAME, "exitApplicationAction");
         try {
+            if (slideShowDisplay != null) {
+                slideShowDisplay.stopShow();
+            }
             shutdown();
         } catch (Exception e) {
         }

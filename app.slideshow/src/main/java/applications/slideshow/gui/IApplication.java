@@ -13,4 +13,10 @@ public interface IApplication {
     void addSlideShowToAction();
 
     void startSlideShowAction();
+
+    void pauseSlideShowAction();
+
+    void resumeSlideShowAction();
+
+    void stopSlideShowAction();
 }

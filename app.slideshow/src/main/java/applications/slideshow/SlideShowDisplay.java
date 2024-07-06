@@ -15,6 +15,8 @@ public class SlideShowDisplay extends GApplication {
     Vector<String> files = null;
     int filesIndex = 0;
     File[] directories;
+    boolean paused = false;
+    int filesCount = 0;
 
     public SlideShowDisplay(File[] directories) {
         super();
@@ -39,7 +41,6 @@ public class SlideShowDisplay extends GApplication {
                 frame().setVisible(false);
                 frame().dispose();
             }
-
         });
         frame().setResizable(false);
         title("Slide Show");
@@ -48,12 +49,17 @@ public class SlideShowDisplay extends GApplication {
         int count = countFiles(directories);
         files = new Vector<>(count);
         nameFiles(directories, files);
+        filesCount = files.size();
         loadNextFile();
     }
 
     @Override
     public void draw() {
         image(img, 0, 0);
+        title("Slide Show - showing slide " + (filesIndex + 1) + " of " + filesCount);
+        if (paused) {
+            return;
+        }
         if (frameCount > 0 && frameCount % 100 == 0) {
             filesIndex++;
             if (filesIndex == files.size() - 1) {
@@ -61,6 +67,18 @@ public class SlideShowDisplay extends GApplication {
             }
             loadNextFile();
         }
+    }
+
+    public void pause() {
+        paused = true;
+    }
+
+    public void resume() {
+        paused = false;
+    }
+
+    public void stopShow() {
+        frame().dispatchEvent(new WindowEvent(frame(), WindowEvent.WINDOW_CLOSING));
     }
 
     private void loadNextFile() {
