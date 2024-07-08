@@ -62,7 +62,7 @@ public class SlideShowDisplay extends GApplication {
         }
         if (frameCount > 0 && frameCount % 100 == 0) {
             filesIndex++;
-            if (filesIndex == files.size() - 1) {
+            if (filesIndex == files.size()) {
                 filesIndex = 0;
             }
             loadNextFile();
