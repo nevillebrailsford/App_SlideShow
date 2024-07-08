@@ -9,9 +9,11 @@ import applications.slideshow.actions.AddSlideShowAction;
 import applications.slideshow.actions.ExitApplicationAction;
 import applications.slideshow.actions.PauseSlideShowAction;
 import applications.slideshow.actions.PreferencesAction;
+import applications.slideshow.actions.RedoAction;
 import applications.slideshow.actions.ResumeSlideShowAction;
 import applications.slideshow.actions.StartSlideShowAction;
 import applications.slideshow.actions.StopSlideShowAction;
+import applications.slideshow.actions.UndoAction;
 
 public class SlideShowMenu extends JMenuBar {
     private static final long serialVersionUID = 1L;
@@ -58,8 +60,10 @@ public class SlideShowMenu extends JMenuBar {
         fileMenu.add(preferences);
         fileMenu.add(exit);
 
-        undoItem = new JMenuItem("Undo");
-        redoItem = new JMenuItem("Redo");
+        undoItem = new JMenuItem(new UndoAction(application));
+        undoItem.setEnabled(false);
+        redoItem = new JMenuItem(new RedoAction(application));
+        redoItem.setEnabled(false);
         copyItem = new JMenuItem("Copy");
         pasteItem = new JMenuItem("Paste");
         deleteItem = new JMenuItem("Delete");
@@ -83,8 +87,42 @@ public class SlideShowMenu extends JMenuBar {
         slideShowMenu.add(pauseItem);
         slideShowMenu.add(resumeItem);
         slideShowMenu.add(stopItem);
+        slideShowStopped();
 
         LOGGER.exiting(CLASS_NAME, "init");
+    }
+
+    public void slideShowStarted() {
+        startItem.setEnabled(false);
+        pauseItem.setEnabled(true);
+        resumeItem.setEnabled(false);
+        stopItem.setEnabled(true);
+    }
+
+    public void slideShowPaused() {
+        startItem.setEnabled(false);
+        pauseItem.setEnabled(false);
+        resumeItem.setEnabled(true);
+        stopItem.setEnabled(true);
+    }
+
+    public void slideShowResumed() {
+        slideShowStarted();
+    }
+
+    public void slideShowStopped() {
+        startItem.setEnabled(true);
+        pauseItem.setEnabled(false);
+        resumeItem.setEnabled(false);
+        stopItem.setEnabled(false);
+    }
+
+    public void undoable(boolean undoable) {
+        undoItem.setEnabled(undoable);
+    }
+
+    public void redoabLe(boolean redoable) {
+        redoItem.setEnabled(redoable);
     }
 
 }

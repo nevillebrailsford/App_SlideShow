@@ -193,6 +193,7 @@ public class Directory implements Comparable<Directory>, TreeNode {
         if (isDirectory) {
             return false;
         }
+        directory.parent = null;
         return store.remove(directory);
     }
 

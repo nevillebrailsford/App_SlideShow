@@ -6,6 +6,7 @@ import application.base.app.gui.BottomColoredPanel;
 import application.base.app.gui.ColorProvider;
 import application.base.app.gui.GUIConstants;
 import application.base.app.gui.PreferencesDialog;
+import application.change.Change;
 import application.change.ChangeManager;
 import application.definition.ApplicationConfiguration;
 import application.definition.ApplicationDefinition;
@@ -66,6 +67,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     private int currentY = 0;
 
     private JTree tree = null;
+    private SlideShowMenu menu = null;
 
     private SlideShowDisplay slideShowDisplay = null;
 
@@ -120,8 +122,8 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         System.out.println(
                 "Application " + ApplicationConfiguration.applicationDefinition().applicationName() + " is starting");
         parent.setLayout(new BorderLayout());
-        SlideShowMenu sm = new SlideShowMenu(this);
-        parent.setJMenuBar(sm);
+        menu = new SlideShowMenu(this);
+        parent.setJMenuBar(menu);
         tree = new JTree(SlideShowManager.instance());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JScrollPane treeView = new JScrollPane();
@@ -148,11 +150,11 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             }
         });
         SlideShowManager.instance().addTreeModelListener(this);
-        expandAllNodes(tree, 0, tree.getRowCount());
         tree.clearSelection();
         ImageIcon dirIcon = createImageIcon("directory-64.png");
         ImageIcon showIcon = createImageIcon("slide-show-64.png");
         tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
+        new SlideShowStateListener(this);
         LOGGER.exiting(CLASS_NAME, "start");
     }
 
@@ -187,20 +189,18 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
 
     @Override
     public void addSlideShowAction() {
-        LOGGER.entering(HOME, "addSlideShowAction");
+        LOGGER.entering(CLASS_NAME, "addSlideShowAction");
         String title = JOptionPane.showInputDialog(this, "Please provide a title");
         if (title != null && !title.isEmpty()) {
             try {
                 Directory newShow = new Directory(title);
                 AddSlideShowChange addSlideShowChange = new AddSlideShowChange(newShow);
-                ThreadServices.instance().executor().submit(() -> {
-                    ChangeManager.instance().execute(addSlideShowChange);
-                });
+                submitChange(addSlideShowChange);
             } catch (Throwable e) {
                 System.out.println(e);
             }
         }
-        LOGGER.exiting(HOME, "addSlideShowAction");
+        LOGGER.exiting(CLASS_NAME, "addSlideShowAction");
     }
 
     @Override
@@ -221,9 +221,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
                 LOGGER.fine("User chose approve option");
                 File[] files = jfc.getSelectedFiles();
                 AddDirectoryChange addDirectoryChange = new AddDirectoryChange(selPath, files);
-                ThreadServices.instance().executor().submit(() -> {
-                    ChangeManager.instance().execute(addDirectoryChange);
-                });
+                submitChange(addDirectoryChange);
             }
         } else {
             JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
@@ -247,9 +245,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             LOGGER.fine("User entered " + title);
             Directory newSlideShow = new Directory(title);
             AddSlideShowToChange addSlideShowToChange = new AddSlideShowToChange(selPath, newSlideShow);
-            ThreadServices.instance().executor().submit(() -> {
-                ChangeManager.instance().execute(addSlideShowToChange);
-            });
+            submitChange(addSlideShowToChange);
         } else {
             JOptionPane.showMessageDialog(this, slideShow + " is not a slide show");
         }
@@ -276,6 +272,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         }
         files = SlideShowManager.instance().files(selPath);
         if (files.length > 0) {
+            menu.slideShowStarted();
             slideShowDisplay = new SlideShowDisplay(files);
         } else {
             JOptionPane.showMessageDialog(this, "Nothing to display");
@@ -286,22 +283,31 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     @Override
     public void pauseSlideShowAction() {
         LOGGER.entering(CLASS_NAME, "pauseSlideShowAction");
-        slideShowDisplay.pause();
+        if (slideShowDisplay != null) {
+            menu.slideShowPaused();
+            slideShowDisplay.pause();
+        }
         LOGGER.exiting(CLASS_NAME, "pauseSlideShowAction");
     }
 
     @Override
     public void resumeSlideShowAction() {
         LOGGER.entering(CLASS_NAME, "resumeSlideShowAction");
-        slideShowDisplay.resume();
+        if (slideShowDisplay != null) {
+            menu.slideShowResumed();
+            slideShowDisplay.resume();
+        }
         LOGGER.exiting(CLASS_NAME, "resumeSlideShowAction");
     }
 
     @Override
     public void stopSlideShowAction() {
         LOGGER.entering(CLASS_NAME, "stopSlideShowAction");
-        slideShowDisplay.stopShow();
-        slideShowDisplay = null;
+        if (slideShowDisplay != null) {
+            menu.slideShowStopped();
+            slideShowDisplay.stopShow();
+            slideShowDisplay = null;
+        }
         LOGGER.exiting(CLASS_NAME, "stopSlideShowAction");
     }
 
@@ -318,16 +324,52 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         LOGGER.exiting(CLASS_NAME, "exitApplicationAction");
     }
 
+    @Override
+    public void undoAction() {
+        LOGGER.entering(CLASS_NAME, "undoAction");
+        ThreadServices.instance().executor().submit(() -> {
+            ChangeManager.instance().undo();
+        });
+        LOGGER.exiting(CLASS_NAME, "undoAction");
+    }
+
+    @Override
+    public void redoAction() {
+        LOGGER.entering(CLASS_NAME, "redoAction");
+        ThreadServices.instance().executor().submit(() -> {
+            ChangeManager.instance().redo();
+        });
+        LOGGER.exiting(CLASS_NAME, "redoAction");
+    }
+
+    private void submitChange(Change change) {
+        LOGGER.entering(CLASS_NAME, "submitChange");
+        ThreadServices.instance().executor().submit(() -> {
+            ChangeManager.instance().execute(change);
+        });
+        LOGGER.exiting(CLASS_NAME, "submitChange");
+    }
+
+    public void updateEditItems() {
+        LOGGER.entering(CLASS_NAME, "updateEditItems");
+        menu.undoable(ChangeManager.instance().undoable());
+        menu.redoabLe(ChangeManager.instance().redoable());
+        LOGGER.exiting(CLASS_NAME, "updateEditItems");
+    }
+
     private static ImageIcon createImageIcon(String path) {
+        LOGGER.entering(CLASS_NAME, "createImageIcon", path);
         java.net.URL imgURL = SlideShowApplication.class.getResource(path);
         if (imgURL != null) {
             ImageIcon result = new ImageIcon(imgURL);
             Image image = result.getImage();
-            Image newImage = image.getScaledInstance(24, 24, java.awt.Image.SCALE_SMOOTH);
+            Image newImage = image.getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH);
             result = new ImageIcon(newImage);
+            LOGGER.exiting(CLASS_NAME, "createImageIcon");
             return result;
         } else {
-            System.err.println("Couldn't find file: " + path);
+            LOGGER.warning("Couldn't find path " + path);
+            LOGGER.exiting(CLASS_NAME, "createImageIcon");
             return null;
         }
     }
@@ -354,10 +396,9 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
 
     @Override
     public void treeStructureChanged(TreeModelEvent e) {
-        expandAllNodes(tree, 0, tree.getRowCount());
     }
 
-    private void expandAllNodes(JTree tree, int startingIndex, int rowCount) {
+    protected void expandAllNodes(JTree tree, int startingIndex, int rowCount) {
         for (int i = startingIndex; i < rowCount; ++i) {
             tree.expandRow(i);
         }

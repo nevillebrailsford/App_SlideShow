@@ -19,4 +19,8 @@ public interface IApplication {
     void resumeSlideShowAction();
 
     void stopSlideShowAction();
+
+    void redoAction();
+
+    void undoAction();
 }
