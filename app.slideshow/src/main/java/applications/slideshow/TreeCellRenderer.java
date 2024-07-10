@@ -1,5 +1,6 @@
 package applications.slideshow;
 
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
@@ -22,8 +23,10 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         if (isDirectory(value)) {
             setIcon(directory);
+            setForeground(Color.orange);
         } else {
             setIcon(slideShow);
+            setForeground(new Color(0, 150, 0));
         }
         return this;
     }
