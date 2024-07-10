@@ -23,4 +23,8 @@ public interface IApplication {
     void redoAction();
 
     void undoAction();
+
+    void copyAction();
+
+    void pasteAction();
 }

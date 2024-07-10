@@ -11,6 +11,7 @@ import application.change.ChangeManager;
 import application.definition.ApplicationConfiguration;
 import application.definition.ApplicationDefinition;
 import application.inifile.IniFile;
+import application.replicate.CopyAndPaste;
 import application.storage.LoadData;
 import application.storage.StoreDetails;
 import application.thread.ThreadServices;
@@ -19,6 +20,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
@@ -34,11 +37,13 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import applications.slideshow.actions.ActionFactory;
 import applications.slideshow.actions.AddDirectoryAction;
 import applications.slideshow.actions.AddSlideShowToAction;
 import applications.slideshow.actions.ExitApplicationAction;
@@ -70,6 +75,8 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     private SlideShowMenu menu = null;
 
     private SlideShowDisplay slideShowDisplay = null;
+
+    private ActionFactory actionFactory;
 
     public SlideShowApplication() {
     }
@@ -122,10 +129,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         System.out.println(
                 "Application " + ApplicationConfiguration.applicationDefinition().applicationName() + " is starting");
         parent.setLayout(new BorderLayout());
+        actionFactory = ActionFactory.instance(this);
         menu = new SlideShowMenu(this);
         parent.setJMenuBar(menu);
-        tree = new JTree(SlideShowManager.instance());
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        tree = createJTree();
         JScrollPane treeView = new JScrollPane();
         treeView.setPreferredSize(new Dimension(800, 500));
         treeView.setViewportView(tree);
@@ -136,24 +143,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         buttonPanel.add(exit);
         add(buttonPanel, BorderLayout.PAGE_END);
         pack();
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(new JMenuItem(new AddDirectoryAction(this)));
-        menu.add(new JMenuItem(new AddSlideShowToAction(this)));
-        menu.add(new JMenuItem(new StartSlideShowAction(this)));
-        tree.setComponentPopupMenu(menu);
-        tree.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                super.mouseMoved(e);
-                currentX = e.getX();
-                currentY = e.getY();
-            }
-        });
         SlideShowManager.instance().addTreeModelListener(this);
-        tree.clearSelection();
-        ImageIcon dirIcon = createImageIcon("directory-64.png");
-        ImageIcon showIcon = createImageIcon("slide-show-64.png");
-        tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
         new SlideShowStateListener(this);
         LOGGER.exiting(CLASS_NAME, "start");
     }
@@ -180,8 +170,6 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     public void preferencesAction() {
         LOGGER.entering(CLASS_NAME, "preferencesAction");
         PreferencesDialog dialog = new SlideShowPreferences(parent);
-        dialog.dispose();
-        dialog = new SlideShowPreferences(parent);
         dialog.setVisible(true);
         dialog.dispose();
         LOGGER.exiting(CLASS_NAME, "preferencesAction");
@@ -256,6 +244,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     @Override
     public void startSlideShowAction() {
         LOGGER.entering(CLASS_NAME, "startSlideShowAction");
+        if (slideShowDisplay != null) {
+            JOptionPane.showMessageDialog(this, "Slide Show is already running", "Start Slide Show",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
         TreePath selPath = null;
         File[] files = null;
         if (tree.getSelectionCount() == 0) {
@@ -342,6 +334,22 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         LOGGER.exiting(CLASS_NAME, "redoAction");
     }
 
+    @Override
+    public void copyAction() {
+        LOGGER.entering(CLASS_NAME, "copyAction");
+        if (!tree.isSelectionEmpty()) {
+            CopyAndPaste.instance().copy(tree.getLastSelectedPathComponent());
+        }
+        LOGGER.exiting(CLASS_NAME, "copyAction");
+    }
+
+    @Override
+    public void pasteAction() {
+        LOGGER.entering(CLASS_NAME, "pasteAction");
+        System.out.println("paste action not implemented");
+        LOGGER.exiting(CLASS_NAME, "pasteAction");
+    }
+
     private void submitChange(Change change) {
         LOGGER.entering(CLASS_NAME, "submitChange");
         ThreadServices.instance().executor().submit(() -> {
@@ -380,6 +388,37 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setMultiSelectionEnabled(true);
         return fc;
+    }
+
+    private JTree createJTree() {
+        JTree tree = new JTree(SlideShowManager.instance());
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem(new AddDirectoryAction(this)));
+        menu.add(new JMenuItem(new AddSlideShowToAction(this)));
+        menu.add(new JMenuItem(new StartSlideShowAction(this)));
+        tree.setComponentPopupMenu(menu);
+        tree.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                currentX = e.getX();
+                currentY = e.getY();
+            }
+        });
+        tree.clearSelection();
+        ImageIcon dirIcon = createImageIcon("directory-64.png");
+        ImageIcon showIcon = createImageIcon("slide-show-64.png");
+        tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK),
+                actionFactory.undoAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK),
+                actionFactory.redoAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK),
+                actionFactory.copyAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK),
+                actionFactory.pasteAction());
+        return tree;
     }
 
     @Override

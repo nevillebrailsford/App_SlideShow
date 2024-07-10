@@ -1,19 +1,21 @@
 package applications.slideshow.gui;
 
 import application.definition.ApplicationConfiguration;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import applications.slideshow.actions.ActionFactory;
 import applications.slideshow.actions.AddSlideShowAction;
 import applications.slideshow.actions.ExitApplicationAction;
 import applications.slideshow.actions.PauseSlideShowAction;
 import applications.slideshow.actions.PreferencesAction;
-import applications.slideshow.actions.RedoAction;
 import applications.slideshow.actions.ResumeSlideShowAction;
 import applications.slideshow.actions.StartSlideShowAction;
 import applications.slideshow.actions.StopSlideShowAction;
-import applications.slideshow.actions.UndoAction;
 
 public class SlideShowMenu extends JMenuBar {
     private static final long serialVersionUID = 1L;
@@ -22,6 +24,7 @@ public class SlideShowMenu extends JMenuBar {
 
     @SuppressWarnings("unused")
     private IApplication application;
+    private ActionFactory actionFactory;
 
     private JMenu fileMenu = new JMenu("File");
     private JMenuItem preferences;
@@ -48,6 +51,7 @@ public class SlideShowMenu extends JMenuBar {
     public SlideShowMenu(IApplication application) {
         LOGGER.entering(CLASS_NAME, "init");
         this.application = application;
+        actionFactory = ActionFactory.instance(application);
         add(fileMenu);
         add(editMenu);
         add(viewMenu);
@@ -60,12 +64,16 @@ public class SlideShowMenu extends JMenuBar {
         fileMenu.add(preferences);
         fileMenu.add(exit);
 
-        undoItem = new JMenuItem(new UndoAction(application));
+        undoItem = new JMenuItem(actionFactory.undoAction());
+        undoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
         undoItem.setEnabled(false);
-        redoItem = new JMenuItem(new RedoAction(application));
+        redoItem = new JMenuItem(actionFactory.redoAction());
+        redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
         redoItem.setEnabled(false);
-        copyItem = new JMenuItem("Copy");
-        pasteItem = new JMenuItem("Paste");
+        copyItem = new JMenuItem(actionFactory.copyAction());
+        copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+        pasteItem = new JMenuItem(actionFactory.pasteAction());
+        pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
         deleteItem = new JMenuItem("Delete");
         editMenu.add(undoItem);
         editMenu.add(redoItem);
