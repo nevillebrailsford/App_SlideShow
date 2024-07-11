@@ -12,7 +12,6 @@ import application.definition.ApplicationConfiguration;
 import application.definition.ApplicationDefinition;
 import application.inifile.IniFile;
 import application.replicate.CopyAndPaste;
-import application.storage.LoadData;
 import application.storage.StoreDetails;
 import application.thread.ThreadServices;
 import java.awt.BorderLayout;
@@ -40,6 +39,8 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -58,7 +59,8 @@ import applications.slideshow.model.Directory;
 import applications.slideshow.storage.SlideShowLoad;
 import applications.slideshow.storage.SlideShowManager;
 
-public class SlideShowApplication extends ApplicationBaseForGUI implements IApplication, TreeModelListener {
+public class SlideShowApplication extends ApplicationBaseForGUI
+        implements IApplication, TreeModelListener, TreeSelectionListener {
     private static final long serialVersionUID = 1L;
     private static final String CLASS_NAME = SlideShowApplication.class.getName();
 
@@ -145,6 +147,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         pack();
         SlideShowManager.instance().addTreeModelListener(this);
         new SlideShowStateListener(this);
+        new SlideShowCopyListener(this);
         LOGGER.exiting(CLASS_NAME, "start");
     }
 
@@ -154,11 +157,6 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         System.out.println(
                 "Application " + ApplicationConfiguration.applicationDefinition().applicationName() + " is stopping");
         LOGGER.exiting(CLASS_NAME, "terminate");
-    }
-
-    @Override
-    public boolean loadExistingModel(LoadData arg0, String arg1, String arg2) {
-        return super.loadExistingModel(arg0, arg1, arg2);
     }
 
     public static void main(String[] args) {
@@ -338,7 +336,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     public void copyAction() {
         LOGGER.entering(CLASS_NAME, "copyAction");
         if (!tree.isSelectionEmpty()) {
-            CopyAndPaste.instance().copy(tree.getLastSelectedPathComponent());
+            CopyAndPaste.instance().copy(tree.getSelectionPath());
         }
         LOGGER.exiting(CLASS_NAME, "copyAction");
     }
@@ -346,8 +344,30 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     @Override
     public void pasteAction() {
         LOGGER.entering(CLASS_NAME, "pasteAction");
-        System.out.println("paste action not implemented");
+        TreePath path = (TreePath) CopyAndPaste.instance().paste();
+        Directory pasteDirectory = (Directory) path.getLastPathComponent();
+        TreePath pathToAddTo = tree.getSelectionPath();
+        Directory newDirectory = pasteDirectory.copy();
+        if (newDirectory.isSlideShow()) {
+            SlideShowManager.instance().addSlideShowTo(pathToAddTo, newDirectory);
+        } else {
+            SlideShowManager.instance().addDirectory(pathToAddTo, newDirectory);
+        }
         LOGGER.exiting(CLASS_NAME, "pasteAction");
+    }
+
+    @Override
+    public void deleteAction() {
+        LOGGER.entering(CLASS_NAME, "deleteAction");
+        TreePath path = tree.getSelectionPath();
+        Directory deleteDirectory = (Directory) path.getLastPathComponent();
+        TreePath pathToDeleteFrom = path.getParentPath();
+        if (deleteDirectory.isSlideShow()) {
+            SlideShowManager.instance().removeSlideShowFrom(pathToDeleteFrom, deleteDirectory);
+        } else {
+            SlideShowManager.instance().removeDirectory(pathToDeleteFrom, deleteDirectory);
+        }
+        LOGGER.exiting(CLASS_NAME, "deleteAction");
     }
 
     private void submitChange(Change change) {
@@ -363,6 +383,12 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         menu.undoable(ChangeManager.instance().undoable());
         menu.redoabLe(ChangeManager.instance().redoable());
         LOGGER.exiting(CLASS_NAME, "updateEditItems");
+    }
+
+    public void updateCopyItems() {
+        LOGGER.entering(CLASS_NAME, "updateCopyItems");
+        menu.pastable(CopyAndPaste.instance().paste() != null);
+        LOGGER.exiting(CLASS_NAME, "updateCopyItems");
     }
 
     private static ImageIcon createImageIcon(String path) {
@@ -393,11 +419,11 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     private JTree createJTree() {
         JTree tree = new JTree(SlideShowManager.instance());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(new JMenuItem(new AddDirectoryAction(this)));
-        menu.add(new JMenuItem(new AddSlideShowToAction(this)));
-        menu.add(new JMenuItem(new StartSlideShowAction(this)));
-        tree.setComponentPopupMenu(menu);
+        tree.setComponentPopupMenu(createPopupMenu());
+        ImageIcon showIcon = createImageIcon("slide-show-64.png");
+        ImageIcon dirIcon = createImageIcon("directory-64.png");
+        tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
+        tree.getSelectionModel().addTreeSelectionListener(this);
         tree.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -407,9 +433,11 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             }
         });
         tree.clearSelection();
-        ImageIcon dirIcon = createImageIcon("directory-64.png");
-        ImageIcon showIcon = createImageIcon("slide-show-64.png");
-        tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
+        setKeyBindings(tree);
+        return tree;
+    }
+
+    private void setKeyBindings(JTree tree) {
         tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK),
                 actionFactory.undoAction());
         tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK),
@@ -418,7 +446,26 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
                 actionFactory.copyAction());
         tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK),
                 actionFactory.pasteAction());
-        return tree;
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK),
+                actionFactory.deleteAction());
+    }
+
+    private JPopupMenu createPopupMenu() {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem(new AddDirectoryAction(this)));
+        menu.add(new JMenuItem(new AddSlideShowToAction(this)));
+        menu.add(new JMenuItem(new StartSlideShowAction(this)));
+        menu.addSeparator();
+        JMenuItem copyItem = new JMenuItem(actionFactory.copyAction());
+        menu.add(copyItem);
+        copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+        JMenuItem pasteItem = new JMenuItem(actionFactory.pasteAction());
+        menu.add(pasteItem);
+        pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+        JMenuItem deleteItem = new JMenuItem(actionFactory.deleteAction());
+        menu.add(deleteItem);
+        deleteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+        return menu;
     }
 
     @Override
@@ -445,6 +492,13 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         if (tree.getRowCount() != rowCount) {
             expandAllNodes(tree, rowCount, tree.getRowCount());
         }
+    }
+
+    @Override
+    public void valueChanged(TreeSelectionEvent e) {
+        menu.copyable(tree.getSelectionPath() != null);
+        menu.pastable(CopyAndPaste.instance().paste() != null);
+        menu.deletable(tree.getSelectionPath() != null);
     }
 
 }

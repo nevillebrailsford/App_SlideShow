@@ -27,4 +27,6 @@ public interface IApplication {
     void copyAction();
 
     void pasteAction();
+
+    void deleteAction();
 }

@@ -66,15 +66,19 @@ public class SlideShowMenu extends JMenuBar {
 
         undoItem = new JMenuItem(actionFactory.undoAction());
         undoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
-        undoItem.setEnabled(false);
+        actionFactory.undoAction().setEnabled(false);
         redoItem = new JMenuItem(actionFactory.redoAction());
         redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
-        redoItem.setEnabled(false);
+        actionFactory.redoAction().setEnabled(false);
         copyItem = new JMenuItem(actionFactory.copyAction());
         copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+        actionFactory.copyAction().setEnabled(false);
         pasteItem = new JMenuItem(actionFactory.pasteAction());
         pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-        deleteItem = new JMenuItem("Delete");
+        actionFactory.pasteAction().setEnabled(false);
+        deleteItem = new JMenuItem(actionFactory.deleteAction());
+        actionFactory.deleteAction().setEnabled(false);
+        deleteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
         editMenu.add(undoItem);
         editMenu.add(redoItem);
         editMenu.addSeparator();
@@ -126,11 +130,23 @@ public class SlideShowMenu extends JMenuBar {
     }
 
     public void undoable(boolean undoable) {
-        undoItem.setEnabled(undoable);
+        actionFactory.undoAction().setEnabled(undoable);
     }
 
     public void redoabLe(boolean redoable) {
-        redoItem.setEnabled(redoable);
+        actionFactory.redoAction().setEnabled(redoable);
+    }
+
+    public void copyable(boolean copyable) {
+        actionFactory.copyAction().setEnabled(copyable);
+    }
+
+    public void pastable(boolean pastable) {
+        actionFactory.pasteAction().setEnabled(pastable);
+    }
+
+    public void deletable(boolean deleteable) {
+        actionFactory.deleteAction().setEnabled(deleteable);
     }
 
 }

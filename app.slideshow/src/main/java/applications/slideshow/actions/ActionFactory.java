@@ -5,8 +5,9 @@ import applications.slideshow.gui.IApplication;
 public class ActionFactory {
     private UndoAction undoAction = null;
     private RedoAction redoAction = null;
-    private PasteAction pasteAction = null;
     private CopyAction copyAction = null;
+    private PasteAction pasteAction = null;
+    private DeleteAction deleteAction = null;
 
     private static ActionFactory instance = null;
     private IApplication application = null;
@@ -48,5 +49,12 @@ public class ActionFactory {
             pasteAction = new PasteAction(application);
         }
         return pasteAction;
+    }
+
+    public DeleteAction deleteAction() {
+        if (deleteAction == null) {
+            deleteAction = new DeleteAction(application);
+        }
+        return deleteAction;
     }
 }
