@@ -10,8 +10,9 @@ import java.util.Vector;
 
 public class SlideShowDisplay extends GApplication {
     GImage img;
-    static final float WIDTH = 1280; // Toolkit.getDefaultToolkit().getScreenSize().width; // 1280; // 5184
-    static final float HEIGHT = 853; // Toolkit.getDefaultToolkit().getScreenSize().height - 100; // 853; // 3456
+    static final float WIDTH = 600;// 1280; // Toolkit.getDefaultToolkit().getScreenSize().width; // 1280; // 5184
+    static final float HEIGHT = 400;// 853; // Toolkit.getDefaultToolkit().getScreenSize().height - 100; // 853; //
+                                    // 3456
     Vector<String> files = null;
     int filesIndex = 0;
     File[] directories;
@@ -57,15 +58,25 @@ public class SlideShowDisplay extends GApplication {
     public void draw() {
         image(img, 0, 0);
         title("Slide Show - showing slide " + (filesIndex + 1) + " of " + filesCount);
-        if (paused) {
-            return;
-        }
-        if (frameCount > 0 && frameCount % 100 == 0) {
-            filesIndex++;
-            if (filesIndex == files.size()) {
-                filesIndex = 0;
+        if (!paused) {
+            if (frameCount > 0 && frameCount % 100 == 0) {
+                filesIndex++;
+                if (filesIndex == files.size()) {
+                    filesIndex = 0;
+                }
+                loadNextFile();
             }
-            loadNextFile();
+        }
+        float x = determineX();
+        float y = determineY();
+        drawControls(x, y);
+        if (mousePressed) {
+            if (overStopButton(x, y)) {
+                stopShow();
+            }
+            if (overPauseButton(x, y)) {
+                paused = !paused;
+            }
         }
     }
 
@@ -126,5 +137,58 @@ public class SlideShowDisplay extends GApplication {
                 nameFiles(fileList[i], names);
             }
         }
+    }
+
+    private void drawControls(float x, float y) {
+        if (cursorOver(x, y)) {
+            drawOuterBox(x, y);
+            drawStopButton(x, y);
+            if (paused) {
+                drawResumeButton(x, y);
+            } else {
+                drawPauseButton(x, y);
+            }
+        }
+    }
+
+    private void drawOuterBox(float x, float y) {
+        fill(255);
+        rect(x, y, 200, 50);
+    }
+
+    private void drawStopButton(float x, float y) {
+        fill(0);
+        square(x + 10, y + 5, 40);
+    }
+
+    private void drawResumeButton(float x, float y) {
+        fill(0);
+        triangle(x + 60, y + 5, x + 60, y + 45, x + 100, y + 25);
+    }
+
+    private void drawPauseButton(float x, float y) {
+        fill(0);
+        rect(x + 60, y + 5, 10, 40);
+        rect(x + 75, y + 5, 10, 40);
+    }
+
+    private boolean cursorOver(float x, float y) {
+        return mouseX > x && mouseX < x + 200 && mouseY > y && mouseY < y + 50;
+    }
+
+    private boolean overStopButton(float x, float y) {
+        return mouseX > x + 10 && mouseX < x + 50 && mouseY > y + 5 && mouseY < y + 45;
+    }
+
+    private boolean overPauseButton(float x, float y) {
+        return mouseX > x + 60 && mouseX < x + 85 && mouseY > y + 5 && mouseY < y + 45;
+    }
+
+    private float determineX() {
+        return (width / 2) - 100;
+    }
+
+    private float determineY() {
+        return height - 60;
     }
 }
