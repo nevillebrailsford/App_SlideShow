@@ -1,4 +1,4 @@
-package applications.slideshow;
+package applications.slideshow.show;
 
 import java.io.IOException;
 

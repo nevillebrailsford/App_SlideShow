@@ -55,7 +55,9 @@ import applications.slideshow.change.AddSlideShowToChange;
 import applications.slideshow.dialog.SlideShowPreferences;
 import applications.slideshow.gui.IApplication;
 import applications.slideshow.gui.SlideShowMenu;
+import applications.slideshow.gui.TreeCellRenderer;
 import applications.slideshow.model.Directory;
+import applications.slideshow.show.SlideShowDisplay;
 import applications.slideshow.storage.SlideShowLoad;
 import applications.slideshow.storage.SlideShowManager;
 

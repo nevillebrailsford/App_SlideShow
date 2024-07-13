@@ -1,4 +1,4 @@
-package applications.slideshow;
+package applications.slideshow.gui;
 
 import java.awt.Color;
 import java.awt.Component;

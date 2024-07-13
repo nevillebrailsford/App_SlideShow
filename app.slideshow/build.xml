@@ -5,7 +5,7 @@
 	<!--define folder properties-->
 	<property name="dir.buildfile" value="." />
 	<property name="dir.workspace" value="${dir.buildfile}" />
-	<property name="app.base.version" value="2.1.4" />
+	<property name="app.base.version" value="2.1.5" />
 	<property name="app.version" value="1.0.0" />
 	<condition property="isWindows">
 		<os family="windows" />

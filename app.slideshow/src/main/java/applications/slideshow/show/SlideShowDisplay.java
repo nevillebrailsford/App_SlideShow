@@ -1,7 +1,8 @@
-package applications.slideshow;
+package applications.slideshow.show;
 
 import application.animation.GApplication;
 import application.animation.GImage;
+import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -9,6 +10,17 @@ import java.io.File;
 import java.util.Vector;
 
 public class SlideShowDisplay extends GApplication {
+    private static final int RESUME_BUTTON_WIDTH = 20;
+    private static final int RESUME_BUTTON_HEIGHT = 20;
+    private static final int PAUSE_BUTTON_HEIGHT = 20;
+    private static final int PAUSE_BUTTON_WIDTH = 10;
+    private static final int PADDING = 5;
+    private static final int STOP_BUTTON_SIZE = 20;
+    private static final int MARGIN = 10;
+    private static final int OUTER_BOX_HEIGHT = 30;
+    private static final int OUTER_BOX_WIDTH = 80;
+    private static final Color UNSELECTED_BUTTON = new Color(128, 128, 128);
+    private static final Color SELECTED_BUTTON = new Color(128, 255, 128);
     GImage img;
     static final float WIDTH = 600;// 1280; // Toolkit.getDefaultToolkit().getScreenSize().width; // 1280; // 5184
     static final float HEIGHT = 400;// 853; // Toolkit.getDefaultToolkit().getScreenSize().height - 100; // 853; //
@@ -18,6 +30,8 @@ public class SlideShowDisplay extends GApplication {
     File[] directories;
     boolean paused = false;
     int filesCount = 0;
+    private Color stopButtonColor = UNSELECTED_BUTTON;
+    private Color pauseButtonColor = UNSELECTED_BUTTON;
 
     public SlideShowDisplay(File[] directories) {
         super();
@@ -57,7 +71,7 @@ public class SlideShowDisplay extends GApplication {
     @Override
     public void draw() {
         image(img, 0, 0);
-        title("Slide Show - showing slide " + (filesIndex + 1) + " of " + filesCount);
+        title("Slide Show - showing slide " + (filesIndex + 1) + " of " + filesCount + (paused ? " - PAUSED" : ""));
         if (!paused) {
             if (frameCount > 0 && frameCount % 100 == 0) {
                 filesIndex++;
@@ -70,11 +84,17 @@ public class SlideShowDisplay extends GApplication {
         float x = determineX();
         float y = determineY();
         drawControls(x, y);
-        if (mousePressed) {
-            if (overStopButton(x, y)) {
+        stopButtonColor = UNSELECTED_BUTTON;
+        pauseButtonColor = UNSELECTED_BUTTON;
+        if (overStopButton(x, y)) {
+            stopButtonColor = SELECTED_BUTTON;
+            if (mousePressed) {
                 stopShow();
             }
-            if (overPauseButton(x, y)) {
+        }
+        if (overPauseButton(x, y)) {
+            pauseButtonColor = SELECTED_BUTTON;
+            if (mousePressed) {
                 paused = !paused;
             }
         }
@@ -153,42 +173,50 @@ public class SlideShowDisplay extends GApplication {
 
     private void drawOuterBox(float x, float y) {
         fill(255);
-        rect(x, y, 200, 50);
+        rect(x, y, OUTER_BOX_WIDTH, OUTER_BOX_HEIGHT, 10);
     }
 
     private void drawStopButton(float x, float y) {
-        fill(0);
-        square(x + 10, y + 5, 40);
+        noStroke();
+        fill(stopButtonColor);
+        square(x + MARGIN, y + PADDING, STOP_BUTTON_SIZE);
     }
 
     private void drawResumeButton(float x, float y) {
-        fill(0);
-        triangle(x + 60, y + 5, x + 60, y + 45, x + 100, y + 25);
+        noStroke();
+        fill(pauseButtonColor);
+        triangle(x + STOP_BUTTON_SIZE + 2 * MARGIN, y + PADDING, x + STOP_BUTTON_SIZE + 2 * MARGIN,
+                y + RESUME_BUTTON_HEIGHT + PADDING, x + 2 * MARGIN + STOP_BUTTON_SIZE + RESUME_BUTTON_WIDTH,
+                y + PADDING + (RESUME_BUTTON_WIDTH / 2));
     }
 
     private void drawPauseButton(float x, float y) {
-        fill(0);
-        rect(x + 60, y + 5, 10, 40);
-        rect(x + 75, y + 5, 10, 40);
+        noStroke();
+        fill(pauseButtonColor);
+        rect(x + STOP_BUTTON_SIZE + 2 * MARGIN, y + PADDING, PAUSE_BUTTON_WIDTH, PAUSE_BUTTON_HEIGHT, 5);
+        rect(x + STOP_BUTTON_SIZE + 3 * MARGIN + PADDING, y + PADDING, PAUSE_BUTTON_WIDTH, PAUSE_BUTTON_HEIGHT, 5);
     }
 
     private boolean cursorOver(float x, float y) {
-        return mouseX > x && mouseX < x + 200 && mouseY > y && mouseY < y + 50;
+        return mouseX > x && mouseX < x + OUTER_BOX_WIDTH && mouseY > y && mouseY < y + OUTER_BOX_HEIGHT;
     }
 
     private boolean overStopButton(float x, float y) {
-        return mouseX > x + 10 && mouseX < x + 50 && mouseY > y + 5 && mouseY < y + 45;
+        return mouseX > x + MARGIN && mouseX < x + MARGIN + STOP_BUTTON_SIZE && mouseY > y + PADDING
+                && mouseY < y + STOP_BUTTON_SIZE + MARGIN;
     }
 
     private boolean overPauseButton(float x, float y) {
-        return mouseX > x + 60 && mouseX < x + 85 && mouseY > y + 5 && mouseY < y + 45;
+        return mouseX > x + MARGIN + STOP_BUTTON_SIZE
+                && mouseX < x + 2 * MARGIN + STOP_BUTTON_SIZE + 2 * PAUSE_BUTTON_WIDTH + PADDING && mouseY > y + PADDING
+                && mouseY < y + PAUSE_BUTTON_HEIGHT + PADDING;
     }
 
     private float determineX() {
-        return (width / 2) - 100;
+        return (width - OUTER_BOX_WIDTH) / 2;
     }
 
     private float determineY() {
-        return height - 60;
+        return height - (OUTER_BOX_HEIGHT + MARGIN);
     }
 }
