@@ -18,51 +18,36 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.Optional;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.KeyStroke;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-import applications.slideshow.actions.ActionFactory;
-import applications.slideshow.actions.AddDirectoryAction;
-import applications.slideshow.actions.AddSlideShowToAction;
 import applications.slideshow.actions.ExitApplicationAction;
-import applications.slideshow.actions.StartSlideShowAction;
 import applications.slideshow.change.AddDirectoryChange;
 import applications.slideshow.change.AddSlideShowChange;
 import applications.slideshow.change.AddSlideShowToChange;
 import applications.slideshow.dialog.SlideShowPreferences;
 import applications.slideshow.gui.IApplication;
 import applications.slideshow.gui.SlideShowMenu;
-import applications.slideshow.gui.TreeCellRenderer;
+import applications.slideshow.gui.SlideShowTree;
 import applications.slideshow.model.Directory;
 import applications.slideshow.show.SlideShowDisplay;
 import applications.slideshow.storage.SlideShowLoad;
 import applications.slideshow.storage.SlideShowManager;
 
-public class SlideShowApplication extends ApplicationBaseForGUI
-        implements IApplication, TreeModelListener, TreeSelectionListener {
+public class SlideShowApplication extends ApplicationBaseForGUI implements IApplication, TreeSelectionListener {
     private static final long serialVersionUID = 1L;
     private static final String CLASS_NAME = SlideShowApplication.class.getName();
 
@@ -79,8 +64,6 @@ public class SlideShowApplication extends ApplicationBaseForGUI
     private SlideShowMenu menu = null;
 
     private SlideShowDisplay slideShowDisplay = null;
-
-    private ActionFactory actionFactory;
 
     public SlideShowApplication() {
     }
@@ -133,7 +116,6 @@ public class SlideShowApplication extends ApplicationBaseForGUI
         System.out.println(
                 "Application " + ApplicationConfiguration.applicationDefinition().applicationName() + " is starting");
         parent.setLayout(new BorderLayout());
-        actionFactory = ActionFactory.instance(this);
         menu = new SlideShowMenu(this);
         parent.setJMenuBar(menu);
         tree = createJTree();
@@ -147,7 +129,6 @@ public class SlideShowApplication extends ApplicationBaseForGUI
         buttonPanel.add(exit);
         add(buttonPanel, BorderLayout.PAGE_END);
         pack();
-        SlideShowManager.instance().addTreeModelListener(this);
         new SlideShowStateListener(this);
         new SlideShowCopyListener(this);
         LOGGER.exiting(CLASS_NAME, "start");
@@ -161,6 +142,11 @@ public class SlideShowApplication extends ApplicationBaseForGUI
         LOGGER.exiting(CLASS_NAME, "terminate");
     }
 
+    /**
+     * Main entry point for program.
+     * 
+     * @param args - any number of arguments passed in from command line.
+     */
     public static void main(String[] args) {
         System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
         launch(args);
@@ -380,6 +366,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI
         LOGGER.exiting(CLASS_NAME, "submitChange");
     }
 
+    /**
+     * Called when the ChangeStateListener determines that an item is present in the
+     * stack of changes.
+     */
     public void updateEditItems() {
         LOGGER.entering(CLASS_NAME, "updateEditItems");
         menu.undoable(ChangeManager.instance().undoable());
@@ -387,27 +377,14 @@ public class SlideShowApplication extends ApplicationBaseForGUI
         LOGGER.exiting(CLASS_NAME, "updateEditItems");
     }
 
+    /**
+     * Called when CopyAndPsateListener determines that an item is available to be
+     * copied.
+     */
     public void updateCopyItems() {
         LOGGER.entering(CLASS_NAME, "updateCopyItems");
         menu.pastable(CopyAndPaste.instance().paste() != null);
         LOGGER.exiting(CLASS_NAME, "updateCopyItems");
-    }
-
-    private static ImageIcon createImageIcon(String path) {
-        LOGGER.entering(CLASS_NAME, "createImageIcon", path);
-        java.net.URL imgURL = SlideShowApplication.class.getResource(path);
-        if (imgURL != null) {
-            ImageIcon result = new ImageIcon(imgURL);
-            Image image = result.getImage();
-            Image newImage = image.getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH);
-            result = new ImageIcon(newImage);
-            LOGGER.exiting(CLASS_NAME, "createImageIcon");
-            return result;
-        } else {
-            LOGGER.warning("Couldn't find path " + path);
-            LOGGER.exiting(CLASS_NAME, "createImageIcon");
-            return null;
-        }
     }
 
     private JFileChooser createFileChooserDialog() {
@@ -419,12 +396,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI
     }
 
     private JTree createJTree() {
-        JTree tree = new JTree(SlideShowManager.instance());
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        tree.setComponentPopupMenu(createPopupMenu());
-        ImageIcon showIcon = createImageIcon("slide-show-64.png");
-        ImageIcon dirIcon = createImageIcon("directory-64.png");
-        tree.setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
+        SlideShowTree tree = new SlideShowTree(SlideShowManager.instance(), this);
         tree.getSelectionModel().addTreeSelectionListener(this);
         tree.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -435,67 +407,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI
             }
         });
         tree.clearSelection();
-        setKeyBindings(tree);
         return tree;
     }
 
-    private void setKeyBindings(JTree tree) {
-        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK),
-                actionFactory.undoAction());
-        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK),
-                actionFactory.redoAction());
-        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK),
-                actionFactory.copyAction());
-        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK),
-                actionFactory.pasteAction());
-        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK),
-                actionFactory.deleteAction());
-    }
-
-    private JPopupMenu createPopupMenu() {
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(new JMenuItem(new AddDirectoryAction(this)));
-        menu.add(new JMenuItem(new AddSlideShowToAction(this)));
-        menu.add(new JMenuItem(new StartSlideShowAction(this)));
-        menu.addSeparator();
-        JMenuItem copyItem = new JMenuItem(actionFactory.copyAction());
-        menu.add(copyItem);
-        copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-        JMenuItem pasteItem = new JMenuItem(actionFactory.pasteAction());
-        menu.add(pasteItem);
-        pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-        JMenuItem deleteItem = new JMenuItem(actionFactory.deleteAction());
-        menu.add(deleteItem);
-        deleteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
-        return menu;
-    }
-
-    @Override
-    public void treeNodesChanged(TreeModelEvent e) {
-    }
-
-    @Override
-    public void treeNodesInserted(TreeModelEvent e) {
-    }
-
-    @Override
-    public void treeNodesRemoved(TreeModelEvent e) {
-    }
-
-    @Override
-    public void treeStructureChanged(TreeModelEvent e) {
-    }
-
-    protected void expandAllNodes(JTree tree, int startingIndex, int rowCount) {
-        for (int i = startingIndex; i < rowCount; ++i) {
-            tree.expandRow(i);
-        }
-
-        if (tree.getRowCount() != rowCount) {
-            expandAllNodes(tree, rowCount, tree.getRowCount());
-        }
-    }
-
+    // Tree selection listener
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         menu.copyable(tree.getSelectionPath() != null);
