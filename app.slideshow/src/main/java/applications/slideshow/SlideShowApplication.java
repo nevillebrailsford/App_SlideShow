@@ -38,6 +38,8 @@ import applications.slideshow.actions.ExitApplicationAction;
 import applications.slideshow.change.AddDirectoryChange;
 import applications.slideshow.change.AddSlideShowChange;
 import applications.slideshow.change.AddSlideShowToChange;
+import applications.slideshow.change.RemoveDirectoryChange;
+import applications.slideshow.change.RemoveSlideShowFromChange;
 import applications.slideshow.dialog.SlideShowPreferences;
 import applications.slideshow.gui.IApplication;
 import applications.slideshow.gui.SlideShowMenu;
@@ -337,9 +339,12 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         TreePath pathToAddTo = tree.getSelectionPath();
         Directory newDirectory = pasteDirectory.copy();
         if (newDirectory.isSlideShow()) {
-            SlideShowManager.instance().addSlideShowTo(pathToAddTo, newDirectory);
+            AddSlideShowToChange addSlideShowToChange = new AddSlideShowToChange(pathToAddTo, newDirectory);
+            submitChange(addSlideShowToChange);
         } else {
-            SlideShowManager.instance().addDirectory(pathToAddTo, newDirectory);
+            AddDirectoryChange addDirectoryChange = new AddDirectoryChange(pathToAddTo,
+                    new File[] { newDirectory.path() });
+            submitChange(addDirectoryChange);
         }
         LOGGER.exiting(CLASS_NAME, "pasteAction");
     }
@@ -351,9 +356,12 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         Directory deleteDirectory = (Directory) path.getLastPathComponent();
         TreePath pathToDeleteFrom = path.getParentPath();
         if (deleteDirectory.isSlideShow()) {
-            SlideShowManager.instance().removeSlideShowFrom(pathToDeleteFrom, deleteDirectory);
+            RemoveSlideShowFromChange removeSlideShowFromChange = new RemoveSlideShowFromChange(pathToDeleteFrom,
+                    deleteDirectory);
+            submitChange(removeSlideShowFromChange);
         } else {
-            SlideShowManager.instance().removeDirectory(pathToDeleteFrom, deleteDirectory);
+            RemoveDirectoryChange removeDirectoryChange = new RemoveDirectoryChange(pathToDeleteFrom, deleteDirectory);
+            submitChange(removeDirectoryChange);
         }
         LOGGER.exiting(CLASS_NAME, "deleteAction");
     }
