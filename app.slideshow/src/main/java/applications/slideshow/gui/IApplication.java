@@ -29,4 +29,6 @@ public interface IApplication {
     void pasteAction();
 
     void deleteAction();
+
+    void showEnding();
 }

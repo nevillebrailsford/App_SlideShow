@@ -256,7 +256,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             String displaySeconds = getSlideDuration();
             String screenWidth = getScreenWidth();
             String screenHeight = getScreenHeight();
-            slideShowDisplay = new SlideShowDisplay(files, displaySeconds, screenWidth, screenHeight);
+            slideShowDisplay = new SlideShowDisplay(files, displaySeconds, screenWidth, screenHeight, this);
         } else {
             JOptionPane.showMessageDialog(this, "Nothing to display");
         }
@@ -375,6 +375,11 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             ChangeManager.instance().execute(change);
         });
         LOGGER.exiting(CLASS_NAME, "submitChange");
+    }
+
+    @Override
+    public void showEnding() {
+        menu.slideShowStopped();
     }
 
     /**

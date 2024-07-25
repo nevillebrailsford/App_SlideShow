@@ -41,7 +41,7 @@ public class SlideShowMenu extends JMenuBar {
         add(fileMenu);
         add(editMenu);
         add(slideShowMenu);
-        newSlideShow = new JMenuItem(actionFactory.addDirectoryAction());
+        newSlideShow = new JMenuItem(actionFactory.addSlideShowAction());
         preferences = new JMenuItem(actionFactory.preferencesAction());
         exit = new JMenuItem(actionFactory.exitApplicationAction());
         fileMenu.add(newSlideShow);

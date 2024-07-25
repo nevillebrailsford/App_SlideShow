@@ -8,6 +8,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.Vector;
+import applications.slideshow.gui.IApplication;
 
 public class SlideShowDisplay extends GApplication {
     private static final int RESUME_BUTTON_WIDTH = 20;
@@ -34,13 +35,16 @@ public class SlideShowDisplay extends GApplication {
     int filesCount = 0;
     private Color stopButtonColor = UNSELECTED_BUTTON;
     private Color pauseButtonColor = UNSELECTED_BUTTON;
+    private IApplication application;
 
-    public SlideShowDisplay(File[] directories, String displaySeconds, String screenWidth, String screenHeight) {
+    public SlideShowDisplay(File[] directories, String displaySeconds, String screenWidth, String screenHeight,
+            IApplication application) {
         super();
         this.directories = directories;
         displaySlideForFrames = Integer.valueOf(displaySeconds) * FRAMES_PER_SECOND;
         WIDTH = Float.valueOf(screenWidth);
         HEIGHT = Float.valueOf(screenHeight);
+        this.application = application;
     }
 
     @Override
@@ -57,6 +61,7 @@ public class SlideShowDisplay extends GApplication {
 
             @Override
             public void windowClosing(WindowEvent e) {
+                application.showEnding();
                 app().stop();
                 frame().setVisible(false);
                 frame().dispose();
@@ -119,7 +124,7 @@ public class SlideShowDisplay extends GApplication {
 
     private void loadNextFile() {
         File file = new File(files.get(filesIndex));
-        img = loadImage(file, WIDTH, HEIGHT, false);
+        img = loadImage(file, WIDTH, HEIGHT, true);
     }
 
     private int countFiles(File[] dirs) {
