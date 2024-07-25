@@ -253,7 +253,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         files = SlideShowManager.instance().files(selPath);
         if (files.length > 0) {
             menu.slideShowStarted();
-            slideShowDisplay = new SlideShowDisplay(files);
+            String displaySeconds = getSlideDuration();
+            String screenWidth = getScreenWidth();
+            String screenHeight = getScreenHeight();
+            slideShowDisplay = new SlideShowDisplay(files, displaySeconds, screenWidth, screenHeight);
         } else {
             JOptionPane.showMessageDialog(this, "Nothing to display");
         }
@@ -416,6 +419,30 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         });
         tree.clearSelection();
         return tree;
+    }
+
+    private String getSlideDuration() {
+        String result = IniFile.value(Constants.DISPLAY_SECONDS);
+        if (result == null || result.isEmpty()) {
+            result = Constants.DEFAULT_SCREENSECONDS;
+        }
+        return result;
+    }
+
+    private String getScreenWidth() {
+        String result = IniFile.value(Constants.SCREEN_WIDTH);
+        if (result == null || result.isEmpty()) {
+            result = Constants.DEFAULT_SCREEN_WIDTH;
+        }
+        return result;
+    }
+
+    private String getScreenHeight() {
+        String result = IniFile.value(Constants.SCREEN_HEIGHT);
+        if (result == null || result.isEmpty()) {
+            result = Constants.DEFAULT_SCREEN_HEIGHT;
+        }
+        return result;
     }
 
     // Tree selection listener

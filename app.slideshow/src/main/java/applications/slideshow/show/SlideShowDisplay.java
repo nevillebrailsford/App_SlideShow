@@ -21,10 +21,12 @@ public class SlideShowDisplay extends GApplication {
     private static final int OUTER_BOX_WIDTH = 80;
     private static final Color UNSELECTED_BUTTON = new Color(128, 128, 128);
     private static final Color SELECTED_BUTTON = new Color(128, 255, 128);
+    private static final int FRAMES_PER_SECOND = 10;
     GImage img;
-    static final float WIDTH = 600;// 1280; // Toolkit.getDefaultToolkit().getScreenSize().width; // 1280; // 5184
-    static final float HEIGHT = 400;// 853; // Toolkit.getDefaultToolkit().getScreenSize().height - 100; // 853; //
-                                    // 3456
+    private float WIDTH;
+    private float HEIGHT;
+    private int displaySlideForFrames;
+
     Vector<String> files = null;
     int filesIndex = 0;
     File[] directories;
@@ -33,9 +35,12 @@ public class SlideShowDisplay extends GApplication {
     private Color stopButtonColor = UNSELECTED_BUTTON;
     private Color pauseButtonColor = UNSELECTED_BUTTON;
 
-    public SlideShowDisplay(File[] directories) {
+    public SlideShowDisplay(File[] directories, String displaySeconds, String screenWidth, String screenHeight) {
         super();
         this.directories = directories;
+        displaySlideForFrames = Integer.valueOf(displaySeconds) * FRAMES_PER_SECOND;
+        WIDTH = Float.valueOf(screenWidth);
+        HEIGHT = Float.valueOf(screenHeight);
     }
 
     @Override
@@ -60,7 +65,7 @@ public class SlideShowDisplay extends GApplication {
         frame().setResizable(false);
         title("Slide Show");
         size(WIDTH, HEIGHT);
-        frames(10);
+        frames(FRAMES_PER_SECOND);
         int count = countFiles(directories);
         files = new Vector<>(count);
         nameFiles(directories, files);
@@ -73,7 +78,7 @@ public class SlideShowDisplay extends GApplication {
         image(img, 0, 0);
         title("Slide Show - showing slide " + (filesIndex + 1) + " of " + filesCount + (paused ? " - PAUSED" : ""));
         if (!paused) {
-            if (frameCount > 0 && frameCount % 100 == 0) {
+            if (frameCount > 0 && frameCount % displaySlideForFrames == 0) {
                 filesIndex++;
                 if (filesIndex == files.size()) {
                     filesIndex = 0;
