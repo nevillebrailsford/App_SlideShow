@@ -21,6 +21,6 @@ echo *=============================================
 echo * Invoke the program - may take a few moments.
 echo *=============================================
 
-java.exe -jar %ROOT_DIR%\%JAR_NAME% --name=slideshow.test --dir=c:/test/data
+java.exe -jar %ROOT_DIR%\%JAR_NAME% --name=slideshow.application --dir=%DATA_DIR%
 
 ENDLOCAL

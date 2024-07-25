@@ -6,8 +6,14 @@ import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 import applications.slideshow.gui.IApplication;
 
 public class SlideShowDisplay extends GApplication {
@@ -27,6 +33,7 @@ public class SlideShowDisplay extends GApplication {
     private float WIDTH;
     private float HEIGHT;
     private int displaySlideForFrames;
+    private Set<Long> alreadySeen;
 
     Vector<String> files = null;
     int filesIndex = 0;
@@ -45,6 +52,7 @@ public class SlideShowDisplay extends GApplication {
         WIDTH = Float.valueOf(screenWidth);
         HEIGHT = Float.valueOf(screenHeight);
         this.application = application;
+        alreadySeen = new HashSet<>();
     }
 
     @Override
@@ -84,10 +92,6 @@ public class SlideShowDisplay extends GApplication {
         title("Slide Show - showing slide " + (filesIndex + 1) + " of " + filesCount + (paused ? " - PAUSED" : ""));
         if (!paused) {
             if (frameCount > 0 && frameCount % displaySlideForFrames == 0) {
-                filesIndex++;
-                if (filesIndex == files.size()) {
-                    filesIndex = 0;
-                }
                 loadNextFile();
             }
         }
@@ -123,8 +127,34 @@ public class SlideShowDisplay extends GApplication {
     }
 
     private void loadNextFile() {
-        File file = new File(files.get(filesIndex));
+        boolean duplicate = false;
+        File file = null;
+        while (!duplicate) {
+            file = new File(files.get(filesIndex++));
+            Long checkSum = checkSum(file);
+            duplicate = alreadySeen.add(checkSum);
+            if (filesIndex == files.size()) {
+                filesIndex = 0;
+                alreadySeen = new HashSet<>();
+            }
+        }
         img = loadImage(file, WIDTH, HEIGHT, true);
+    }
+
+    private long checkSum(File file) {
+        CheckedInputStream check = null;
+        try {
+            check = new CheckedInputStream(new FileInputStream(file), new CRC32());
+            BufferedInputStream in = new BufferedInputStream(check);
+
+            while (in.read() != -1) {
+                // Read file in completely
+            }
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (check.getChecksum().getValue());
     }
 
     private int countFiles(File[] dirs) {

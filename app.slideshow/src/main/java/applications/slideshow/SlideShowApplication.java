@@ -380,6 +380,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     @Override
     public void showEnding() {
         menu.slideShowStopped();
+        slideShowDisplay = null;
     }
 
     /**
