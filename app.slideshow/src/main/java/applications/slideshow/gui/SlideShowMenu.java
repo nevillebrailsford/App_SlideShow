@@ -35,12 +35,16 @@ public class SlideShowMenu extends JMenuBar {
     private JMenuItem resumeItem;
     private JMenuItem stopItem;
 
+    private JMenu helpMenu = new JMenu("Help");
+    private JMenuItem aboutItem;
+
     public SlideShowMenu(IApplication application) {
         LOGGER.entering(CLASS_NAME, "init");
         actionFactory = ActionFactory.instance(application);
         add(fileMenu);
         add(editMenu);
         add(slideShowMenu);
+        add(helpMenu);
         newSlideShow = new JMenuItem(actionFactory.addSlideShowAction());
         preferences = new JMenuItem(actionFactory.preferencesAction());
         exit = new JMenuItem(actionFactory.exitApplicationAction());
@@ -80,6 +84,9 @@ public class SlideShowMenu extends JMenuBar {
         slideShowMenu.add(resumeItem);
         slideShowMenu.add(stopItem);
         slideShowStopped();
+
+        aboutItem = new JMenuItem(actionFactory.helpAboutAction());
+        helpMenu.add(aboutItem);
 
         LOGGER.exiting(CLASS_NAME, "init");
     }

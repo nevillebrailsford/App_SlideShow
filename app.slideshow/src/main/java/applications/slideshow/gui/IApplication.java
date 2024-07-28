@@ -31,4 +31,6 @@ public interface IApplication {
     void deleteAction();
 
     void showEnding();
+
+    void helpAboutAction();
 }

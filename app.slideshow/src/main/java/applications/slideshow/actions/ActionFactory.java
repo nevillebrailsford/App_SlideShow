@@ -17,6 +17,7 @@ public class ActionFactory {
     private StartSlideShowAction startSlideShowAction = null;
     private StopSlideShowAction stopSlideShowAction = null;
     private UndoAction undoAction = null;
+    private HelpAboutAction helpAboutAction = null;
     private static ActionFactory instance = null;
     private IApplication application = null;
 
@@ -127,6 +128,13 @@ public class ActionFactory {
             undoAction = new UndoAction(application);
         }
         return undoAction;
+    }
+
+    public HelpAboutAction helpAboutAction() {
+        if (helpAboutAction == null) {
+            helpAboutAction = new HelpAboutAction(application);
+        }
+        return helpAboutAction;
     }
 
 }

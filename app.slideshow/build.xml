@@ -36,7 +36,7 @@
 				<attribute name="Main-Class" value="applications.slideshow.SlideShowApplication" />
 				<attribute name="Class-Path" value=". SlideShowApp_lib/jcalendar-1.4.jar SlideShowApp_lib/jgoodies-forms-1.9.0.jar SlideShowApp_lib/jgoodies-common-1.8.1.jar SlideShowApp_lib/app.base-${app.base.version}.jar SlideShowApp_lib/javax.mail-1.6.2.jar SlideShowApp_lib/activation-1.1.jar SlideShowApp_lib/kernel-7.2.1.jar SlideShowApp_lib/bcpkix-jdk15on-1.69.jar SlideShowApp_lib/bcutil-jdk15on-1.69.jar SlideShowApp_lib/bcprov-jdk15on-1.69.jar SlideShowApp_lib/slf4j-api-1.7.31.jar SlideShowApp_lib/io-7.2.1.jar SlideShowApp_lib/commons-7.2.1.jar SlideShowApp_lib/layout-7.2.1.jar SlideShowApp_lib/metadata-extractor-2.14.0.jar SlideShowApp_lib/xmpcore-6.0.6.jar" />
 				<attribute name="Build-Date" value="${slideshow.build.date}" />
-				<attribute name="Build-Number" value="${slideshow.number}" />
+				<attribute name="Build-Number" value="${build.number}" />
                 <attribute name="Application-Version" value="${app.version}" />
 			</manifest>
 			<fileset dir="${dir.buildfile}/target/classes" />

@@ -235,6 +235,8 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         if (slideShowDisplay != null) {
             JOptionPane.showMessageDialog(this, "Slide Show is already running", "Start Slide Show",
                     JOptionPane.INFORMATION_MESSAGE);
+            LOGGER.exiting(CLASS_NAME, "startSlideShowAction");
+            return;
         }
         TreePath selPath = null;
         File[] files = null;
@@ -305,6 +307,16 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         } catch (Exception e) {
         }
         LOGGER.exiting(CLASS_NAME, "exitApplicationAction");
+    }
+
+    @Override
+    public void helpAboutAction() {
+        LOGGER.entering(CLASS_NAME, "helpAboutAction");
+        String applicationName = ApplicationConfiguration.applicationDefinition().applicationName();
+        String title = "About " + applicationName;
+        String message = getBuildInformation(applicationName);
+        JOptionPane.showMessageDialog(this, message, title, JOptionPane.INFORMATION_MESSAGE);
+        LOGGER.exiting(CLASS_NAME, "helpAboutAction");
     }
 
     @Override
@@ -448,6 +460,24 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         if (result == null || result.isEmpty()) {
             result = Constants.DEFAULT_SCREEN_HEIGHT;
         }
+        return result;
+    }
+
+    private String getBuildInformation(String applicationName) {
+        LOGGER.entering(CLASS_NAME, "getBuildInformation", applicationName);
+        String result = "";
+        StringBuilder builder = new StringBuilder(applicationName);
+        try {
+            builder.append("\nBuild: ").append(ApplicationDefinition.getFromManifest("Build-Number", getClass())
+                    .orElse("Could not be determined"));
+            builder.append("\nBuild Date: ").append(
+                    ApplicationDefinition.getFromManifest("Build-Date", getClass()).orElse("Could not be determined"));
+        } catch (Exception e) {
+            builder.append("\nUnable to gather build version and date information\ndue to exception " + e.getMessage());
+            LOGGER.fine("Caught exception: " + e.getMessage());
+        }
+        result = builder.toString();
+        LOGGER.exiting(CLASS_NAME, "getBuildInformation", result);
         return result;
     }
 
