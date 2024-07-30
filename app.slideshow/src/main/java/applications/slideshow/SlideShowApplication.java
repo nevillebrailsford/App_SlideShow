@@ -55,7 +55,6 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
 
     private static Logger LOGGER = null;
 
-    private static final String HOME = "C:/Users/nevil/OneDrive/Pictures/";
     private JFrame parent;
     private JButton exit;
 
@@ -66,6 +65,14 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     private SlideShowMenu menu = null;
 
     private SlideShowDisplay slideShowDisplay = null;
+
+    public static String getHomeDirectory() {
+        String home = IniFile.value(Constants.HOME_DIRECTORY);
+        if (home == null || home.isEmpty()) {
+            home = System.getProperty("user.home");
+        }
+        return home;
+    }
 
     public SlideShowApplication() {
     }
@@ -417,7 +424,8 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     }
 
     private JFileChooser createFileChooserDialog() {
-        JFileChooser fc = new JFileChooser(HOME);
+        String home = getHomeDirectory();
+        JFileChooser fc = new JFileChooser(home);
         fc.setDialogTitle("Select which directories you'd like to view.");
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setMultiSelectionEnabled(true);

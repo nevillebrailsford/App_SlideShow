@@ -2,8 +2,11 @@ package applications.slideshow.dialog;
 
 import application.base.app.gui.PreferencesDialog;
 import application.inifile.IniFile;
+import java.io.File;
 import java.util.StringTokenizer;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -11,6 +14,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import applications.slideshow.Constants;
+import applications.slideshow.SlideShowApplication;
 
 /**
  * The preferences dialog for the slide show application. This class adds some
@@ -18,6 +22,10 @@ import applications.slideshow.Constants;
  */
 public class SlideShowPreferences extends PreferencesDialog {
     private static final long serialVersionUID = 1L;
+
+    private JLabel lbl_home;
+    private JTextField home;
+    private JButton btn_home;
 
     private JLabel lbl_displayFor;
     private JTextField displayFor;
@@ -67,6 +75,11 @@ public class SlideShowPreferences extends PreferencesDialog {
      */
     @Override
     public void additionalGUIItems(JPanel contentPanel) {
+        lbl_home = new JLabel("Home directory");
+        home = new JTextField();
+        home.setEditable(false);
+        btn_home = new JButton("Browse");
+
         lbl_displayFor = new JLabel("Display picture for");
         displayFor = new JTextField();
         displayFor.setColumns(10);
@@ -75,6 +88,10 @@ public class SlideShowPreferences extends PreferencesDialog {
         lbl_size = new JLabel("Size");
         size = new JComboBox<>();
         lbl_empty = new JLabel(" ");
+
+        contentPanel.add(lbl_home);
+        contentPanel.add(home);
+        contentPanel.add(btn_home);
 
         contentPanel.add(lbl_displayFor);
         contentPanel.add(displayFor);
@@ -85,6 +102,11 @@ public class SlideShowPreferences extends PreferencesDialog {
         contentPanel.add(lbl_empty);
 
         loadContents();
+
+        btn_home.addActionListener((event) -> {
+            chooseHomeDirectory();
+
+        });
     }
 
     /**
@@ -93,6 +115,7 @@ public class SlideShowPreferences extends PreferencesDialog {
      */
     @Override
     public void saveAdditionalPreferences() {
+        saveHomeContents();
         saveDisplayContents();
         saveScreenSizeContents();
     }
@@ -110,8 +133,18 @@ public class SlideShowPreferences extends PreferencesDialog {
     }
 
     private void loadContents() {
+        loadHomeContents();
         loadDisplayContents();
         loadScreenSizeContents();
+    }
+
+    private void saveHomeContents() {
+        IniFile.store(Constants.HOME_DIRECTORY, home.getText());
+    }
+
+    private void loadHomeContents() {
+        String home = SlideShowApplication.getHomeDirectory();
+        this.home.setText(home);
     }
 
     private void saveDisplayContents() {
@@ -152,4 +185,23 @@ public class SlideShowPreferences extends PreferencesDialog {
         String chosenSize = width + "x" + height;
         size.setSelectedItem(chosenSize);
     }
+
+    private void chooseHomeDirectory() {
+        JFileChooser fc = createFileChooser();
+        int returnValue = fc.showOpenDialog(this);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File dir = fc.getSelectedFile();
+            home.setText(dir.getAbsolutePath());
+        }
+    }
+
+    private JFileChooser createFileChooser() {
+        String home = SlideShowApplication.getHomeDirectory();
+        JFileChooser fc = new JFileChooser(home);
+        fc.setDialogTitle("Choose Home Directory.");
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setMultiSelectionEnabled(false);
+        return fc;
+    }
+
 }

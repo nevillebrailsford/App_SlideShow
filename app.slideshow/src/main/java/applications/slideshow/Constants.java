@@ -5,6 +5,7 @@ import application.storage.StorageConstants;
 import applications.slideshow.storage.ModelConstants;
 
 public class Constants implements BaseConstants, StorageConstants, ModelConstants {
+    public final static String HOME_DIRECTORY = "homedirectory";
     public final static String DISPLAY_SECONDS = "displayseconds";
     public final static String SCREEN_WIDTH = "screenwidth";
     public final static String SCREEN_HEIGHT = "screenheight";
