@@ -2,14 +2,14 @@ package applications.slideshow.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import applications.slideshow.gui.IApplication;
+import applications.slideshow.ISlideShowApplication;
 
 public class StopSlideShowAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
-    private IApplication application;
+    private ISlideShowApplication application;
 
-    public StopSlideShowAction(IApplication application) {
+    public StopSlideShowAction(ISlideShowApplication application) {
         super("Stop slide show");
         this.application = application;
     }

@@ -12,21 +12,21 @@ import javax.swing.KeyStroke;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeSelectionModel;
 import applications.slideshow.SlideShowApplication;
-import applications.slideshow.actions.ActionFactory;
+import applications.slideshow.actions.SlideShowActionFactory;
 
 public class SlideShowTree extends JTree {
     private static final long serialVersionUID = 1L;
     private static final String CLASS_NAME = SlideShowTree.class.getName();
     private static Logger LOGGER = ApplicationConfiguration.logger();
 
-    private ActionFactory actionFactory;
+    private SlideShowActionFactory actionFactory;
 
-    public SlideShowTree(TreeModel manager, IApplication application) {
+    public SlideShowTree(TreeModel manager) {
         super(manager);
         LOGGER.entering(CLASS_NAME, "init");
-        actionFactory = ActionFactory.instance(application);
+        actionFactory = SlideShowActionFactory.instance();
         getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        setComponentPopupMenu(createPopupMenu(application));
+        setComponentPopupMenu(createPopupMenu());
         ImageIcon showIcon = createImageIcon("slide-show-64.png");
         ImageIcon dirIcon = createImageIcon("directory-64.png");
         setCellRenderer(new TreeCellRenderer(showIcon, dirIcon));
@@ -47,8 +47,8 @@ public class SlideShowTree extends JTree {
                 actionFactory.deleteAction());
     }
 
-    private JPopupMenu createPopupMenu(IApplication application) {
-        SlideShowPopup menu = new SlideShowPopup(application);
+    private JPopupMenu createPopupMenu() {
+        SlideShowPopup menu = new SlideShowPopup();
         return menu;
     }
 

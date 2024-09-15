@@ -2,14 +2,14 @@ package applications.slideshow.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import applications.slideshow.gui.IApplication;
+import applications.slideshow.ISlideShowApplication;
 
 public class AddSlideShowToAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
-    private IApplication application;
+    private ISlideShowApplication application;
 
-    public AddSlideShowToAction(IApplication application) {
+    public AddSlideShowToAction(ISlideShowApplication application) {
         super("Add Slide Show To");
         this.application = application;
     }

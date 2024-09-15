@@ -2,14 +2,14 @@ package applications.slideshow.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import applications.slideshow.gui.IApplication;
+import applications.slideshow.ISlideShowApplication;
 
 public class CopyAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
-    private IApplication application;
+    private ISlideShowApplication application;
 
-    public CopyAction(IApplication application) {
+    public CopyAction(ISlideShowApplication application) {
         super("Copy");
         this.application = application;
     }

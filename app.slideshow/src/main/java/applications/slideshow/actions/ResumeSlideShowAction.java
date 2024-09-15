@@ -2,14 +2,14 @@ package applications.slideshow.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import applications.slideshow.gui.IApplication;
+import applications.slideshow.ISlideShowApplication;
 
 public class ResumeSlideShowAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
-    private IApplication application;
+    private ISlideShowApplication application;
 
-    public ResumeSlideShowAction(IApplication application) {
+    public ResumeSlideShowAction(ISlideShowApplication application) {
         super("Resume slide show");
         this.application = application;
     }

@@ -5,12 +5,12 @@ import application.base.app.Parameters;
 import application.base.app.gui.BottomColoredPanel;
 import application.base.app.gui.ColorProvider;
 import application.base.app.gui.GUIConstants;
-import application.base.app.gui.PreferencesDialog;
 import application.change.Change;
 import application.change.ChangeManager;
 import application.definition.ApplicationConfiguration;
 import application.definition.ApplicationDefinition;
 import application.inifile.IniFile;
+import application.preferences.PreferencesDialog;
 import application.replicate.CopyAndPaste;
 import application.storage.StoreDetails;
 import application.thread.ThreadServices;
@@ -34,14 +34,13 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import applications.slideshow.actions.ExitApplicationAction;
+import applications.slideshow.actions.SlideShowActionFactory;
 import applications.slideshow.change.AddDirectoryChange;
 import applications.slideshow.change.AddSlideShowChange;
 import applications.slideshow.change.AddSlideShowToChange;
 import applications.slideshow.change.RemoveDirectoryChange;
 import applications.slideshow.change.RemoveSlideShowFromChange;
 import applications.slideshow.dialog.SlideShowPreferences;
-import applications.slideshow.gui.IApplication;
 import applications.slideshow.gui.SlideShowMenu;
 import applications.slideshow.gui.SlideShowTree;
 import applications.slideshow.model.Directory;
@@ -49,7 +48,8 @@ import applications.slideshow.show.SlideShowDisplay;
 import applications.slideshow.storage.SlideShowLoad;
 import applications.slideshow.storage.SlideShowManager;
 
-public class SlideShowApplication extends ApplicationBaseForGUI implements IApplication, TreeSelectionListener {
+public class SlideShowApplication extends ApplicationBaseForGUI
+        implements ISlideShowApplication, TreeSelectionListener {
     private static final long serialVersionUID = 1L;
     private static final String CLASS_NAME = SlideShowApplication.class.getName();
 
@@ -78,9 +78,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     }
 
     @Override
-    public void configureStoreDetails() {
+    public StoreDetails configureStoreDetails() {
         dataLoader = new SlideShowLoad();
-        storeDetails = new StoreDetails(dataLoader, Constants.MODEL, Constants.SLIDE_SHOW_FILE);
+        StoreDetails storeDetails = new StoreDetails(dataLoader, Constants.MODEL, Constants.SLIDE_SHOW_FILE);
+        return storeDetails;
     }
 
     @Override
@@ -134,11 +135,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         add(treeView, BorderLayout.CENTER);
         JPanel buttonPanel = new BottomColoredPanel();
         buttonPanel.setLayout(new FlowLayout());
-        exit = new JButton(new ExitApplicationAction(this));
+        exit = new JButton(SlideShowActionFactory.instance().exitApplicationAction());
         buttonPanel.add(exit);
         add(buttonPanel, BorderLayout.PAGE_END);
         pack();
-        new SlideShowStateListener(this);
         new SlideShowCopyListener(this);
         LOGGER.exiting(CLASS_NAME, "start");
     }
@@ -310,38 +310,10 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
             if (slideShowDisplay != null) {
                 slideShowDisplay.stopShow();
             }
-            shutdown();
+            super.exitApplicationAction();
         } catch (Exception e) {
         }
         LOGGER.exiting(CLASS_NAME, "exitApplicationAction");
-    }
-
-    @Override
-    public void helpAboutAction() {
-        LOGGER.entering(CLASS_NAME, "helpAboutAction");
-        String applicationName = ApplicationConfiguration.applicationDefinition().applicationName();
-        String title = "About " + applicationName;
-        String message = getBuildInformation(applicationName);
-        JOptionPane.showMessageDialog(this, message, title, JOptionPane.INFORMATION_MESSAGE);
-        LOGGER.exiting(CLASS_NAME, "helpAboutAction");
-    }
-
-    @Override
-    public void undoAction() {
-        LOGGER.entering(CLASS_NAME, "undoAction");
-        ThreadServices.instance().executor().submit(() -> {
-            ChangeManager.instance().undo();
-        });
-        LOGGER.exiting(CLASS_NAME, "undoAction");
-    }
-
-    @Override
-    public void redoAction() {
-        LOGGER.entering(CLASS_NAME, "redoAction");
-        ThreadServices.instance().executor().submit(() -> {
-            ChangeManager.instance().redo();
-        });
-        LOGGER.exiting(CLASS_NAME, "redoAction");
     }
 
     @Override
@@ -403,23 +375,12 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     }
 
     /**
-     * Called when the ChangeStateListener determines that an item is present in the
-     * stack of changes.
-     */
-    public void updateEditItems() {
-        LOGGER.entering(CLASS_NAME, "updateEditItems");
-        menu.undoable(ChangeManager.instance().undoable());
-        menu.redoabLe(ChangeManager.instance().redoable());
-        LOGGER.exiting(CLASS_NAME, "updateEditItems");
-    }
-
-    /**
      * Called when CopyAndPsateListener determines that an item is available to be
      * copied.
      */
     public void updateCopyItems() {
         LOGGER.entering(CLASS_NAME, "updateCopyItems");
-        menu.pastable(CopyAndPaste.instance().paste() != null);
+        SlideShowActionFactory.instance().pastable(CopyAndPaste.instance().paste() != null);
         LOGGER.exiting(CLASS_NAME, "updateCopyItems");
     }
 
@@ -433,7 +394,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
     }
 
     private JTree createJTree() {
-        SlideShowTree tree = new SlideShowTree(SlideShowManager.instance(), this);
+        SlideShowTree tree = new SlideShowTree(SlideShowManager.instance());
         tree.getSelectionModel().addTreeSelectionListener(this);
         tree.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -471,30 +432,13 @@ public class SlideShowApplication extends ApplicationBaseForGUI implements IAppl
         return result;
     }
 
-    private String getBuildInformation(String applicationName) {
-        LOGGER.entering(CLASS_NAME, "getBuildInformation", applicationName);
-        String result = "";
-        StringBuilder builder = new StringBuilder(applicationName);
-        try {
-            builder.append("\nBuild: ").append(ApplicationDefinition.getFromManifest("Build-Number", getClass())
-                    .orElse("Could not be determined"));
-            builder.append("\nBuild Date: ").append(
-                    ApplicationDefinition.getFromManifest("Build-Date", getClass()).orElse("Could not be determined"));
-        } catch (Exception e) {
-            builder.append("\nUnable to gather build version and date information\ndue to exception " + e.getMessage());
-            LOGGER.fine("Caught exception: " + e.getMessage());
-        }
-        result = builder.toString();
-        LOGGER.exiting(CLASS_NAME, "getBuildInformation", result);
-        return result;
-    }
-
     // Tree selection listener
     @Override
     public void valueChanged(TreeSelectionEvent e) {
-        menu.copyable(tree.getSelectionPath() != null);
-        menu.pastable(CopyAndPaste.instance().paste() != null);
-        menu.deletable(tree.getSelectionPath() != null);
+        SlideShowActionFactory.instance().copyable(tree.getSelectionPath() != null);
+        SlideShowActionFactory.instance().pastable(CopyAndPaste.instance().paste() != null);
+        SlideShowActionFactory.instance().deletable(tree.getSelectionPath() != null);
+        SlideShowActionFactory.instance().startable(tree.getSelectionPath() != null);
     }
 
 }

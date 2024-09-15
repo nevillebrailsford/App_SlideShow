@@ -1,108 +1,82 @@
 package applications.slideshow.gui;
 
 import application.definition.ApplicationConfiguration;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import application.menu.AbstractMenuBar;
 import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
-import applications.slideshow.actions.ActionFactory;
+import applications.slideshow.ISlideShowApplication;
+import applications.slideshow.actions.SlideShowActionFactory;
 
-public class SlideShowMenu extends JMenuBar {
+public class SlideShowMenu extends AbstractMenuBar {
     private static final long serialVersionUID = 1L;
     private static final String CLASS_NAME = SlideShowMenu.class.getName();
     private static Logger LOGGER = ApplicationConfiguration.logger();
 
-    private ActionFactory actionFactory;
-
-    private JMenu fileMenu = new JMenu("File");
-    private JMenuItem preferences;
     private JMenuItem newSlideShow;
-    private JMenuItem exit;
 
-    private JMenu editMenu = new JMenu("Edit");
-    private JMenuItem undoItem;
-    private JMenuItem redoItem;
     private JMenuItem copyItem;
     private JMenuItem pasteItem;
     private JMenuItem deleteItem;
 
-    private JMenu slideShowMenu = new JMenu("Slide Show");
+    private JMenu slideShowMenu;
     private JMenuItem startItem;
     private JMenuItem pauseItem;
     private JMenuItem resumeItem;
     private JMenuItem stopItem;
 
-    private JMenu helpMenu = new JMenu("Help");
-    private JMenuItem aboutItem;
-
-    public SlideShowMenu(IApplication application) {
+    public SlideShowMenu(ISlideShowApplication application) {
+        super(SlideShowActionFactory.instance(application));
         LOGGER.entering(CLASS_NAME, "init");
-        actionFactory = ActionFactory.instance(application);
-        add(fileMenu);
-        add(editMenu);
-        add(slideShowMenu);
-        add(helpMenu);
-        newSlideShow = new JMenuItem(actionFactory.addSlideShowAction());
-        preferences = new JMenuItem(actionFactory.preferencesAction());
-        exit = new JMenuItem(actionFactory.exitApplicationAction());
+        LOGGER.exiting(CLASS_NAME, "init");
+    }
+
+    @Override
+    public void addBeforePreferences(JMenu fileMenu) {
+        newSlideShow = new JMenuItem(SlideShowActionFactory.instance().addSlideShowAction());
         fileMenu.add(newSlideShow);
         fileMenu.addSeparator();
-        fileMenu.add(preferences);
-        fileMenu.add(exit);
+    }
 
-        undoItem = new JMenuItem(actionFactory.undoAction());
-        undoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
-        actionFactory.undoAction().setEnabled(false);
-        redoItem = new JMenuItem(actionFactory.redoAction());
-        redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
-        actionFactory.redoAction().setEnabled(false);
-        copyItem = new JMenuItem(actionFactory.copyAction());
-        copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-        actionFactory.copyAction().setEnabled(false);
-        pasteItem = new JMenuItem(actionFactory.pasteAction());
-        pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-        actionFactory.pasteAction().setEnabled(false);
-        deleteItem = new JMenuItem(actionFactory.deleteAction());
-        actionFactory.deleteAction().setEnabled(false);
-        deleteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
-        editMenu.add(undoItem);
-        editMenu.add(redoItem);
+    @Override
+    public void addToEditMenu(JMenu editMenu) {
+        copyItem = new JMenuItem(SlideShowActionFactory.instance().copyAction());
+        pasteItem = new JMenuItem(SlideShowActionFactory.instance().pasteAction());
+        deleteItem = new JMenuItem(SlideShowActionFactory.instance().deleteAction());
         editMenu.addSeparator();
         editMenu.add(copyItem);
         editMenu.add(pasteItem);
         editMenu.add(deleteItem);
+    }
 
-        startItem = new JMenuItem(actionFactory.startSlideShowAction());
-        pauseItem = new JMenuItem(actionFactory.pauseSlideShowAction());
-        resumeItem = new JMenuItem(actionFactory.resumeSlideShowAction());
-        stopItem = new JMenuItem(actionFactory.stopSlideShowAction());
+    @Override
+    public void addAdditionalMenus(JMenuBar menuBar) {
+        startItem = new JMenuItem(SlideShowActionFactory.instance().startSlideShowAction());
+        pauseItem = new JMenuItem(SlideShowActionFactory.instance().pauseSlideShowAction());
+        resumeItem = new JMenuItem(SlideShowActionFactory.instance().resumeSlideShowAction());
+        stopItem = new JMenuItem(SlideShowActionFactory.instance().stopSlideShowAction());
+        slideShowMenu = new JMenu("Slide Show");
         slideShowMenu.add(startItem);
         slideShowMenu.add(pauseItem);
         slideShowMenu.add(resumeItem);
         slideShowMenu.add(stopItem);
+        menuBar.add(slideShowMenu);
         slideShowStopped();
-
-        aboutItem = new JMenuItem(actionFactory.helpAboutAction());
-        helpMenu.add(aboutItem);
-
-        LOGGER.exiting(CLASS_NAME, "init");
     }
 
     public void slideShowStarted() {
-        actionFactory.startSlideShowAction().setEnabled(false);
-        actionFactory.pauseSlideShowAction().setEnabled(true);
-        actionFactory.resumeSlideShowAction().setEnabled(false);
-        actionFactory.stopSlideShowAction().setEnabled(true);
+        SlideShowActionFactory.instance().startSlideShowAction().setEnabled(false);
+        SlideShowActionFactory.instance().pauseSlideShowAction().setEnabled(true);
+        SlideShowActionFactory.instance().resumeSlideShowAction().setEnabled(false);
+        SlideShowActionFactory.instance().stopSlideShowAction().setEnabled(true);
     }
 
     public void slideShowPaused() {
-        actionFactory.startSlideShowAction().setEnabled(false);
-        actionFactory.pauseSlideShowAction().setEnabled(false);
-        actionFactory.resumeSlideShowAction().setEnabled(true);
-        actionFactory.stopSlideShowAction().setEnabled(true);
+        SlideShowActionFactory.instance().startSlideShowAction().setEnabled(false);
+        SlideShowActionFactory.instance().pauseSlideShowAction().setEnabled(false);
+        SlideShowActionFactory.instance().resumeSlideShowAction().setEnabled(true);
+        SlideShowActionFactory.instance().stopSlideShowAction().setEnabled(true);
     }
 
     public void slideShowResumed() {
@@ -110,30 +84,10 @@ public class SlideShowMenu extends JMenuBar {
     }
 
     public void slideShowStopped() {
-        actionFactory.startSlideShowAction().setEnabled(true);
-        actionFactory.pauseSlideShowAction().setEnabled(false);
-        actionFactory.resumeSlideShowAction().setEnabled(false);
-        actionFactory.stopSlideShowAction().setEnabled(false);
-    }
-
-    public void undoable(boolean undoable) {
-        actionFactory.undoAction().setEnabled(undoable);
-    }
-
-    public void redoabLe(boolean redoable) {
-        actionFactory.redoAction().setEnabled(redoable);
-    }
-
-    public void copyable(boolean copyable) {
-        actionFactory.copyAction().setEnabled(copyable);
-    }
-
-    public void pastable(boolean pastable) {
-        actionFactory.pasteAction().setEnabled(pastable);
-    }
-
-    public void deletable(boolean deleteable) {
-        actionFactory.deleteAction().setEnabled(deleteable);
+        SlideShowActionFactory.instance().startSlideShowAction().setEnabled(false);
+        SlideShowActionFactory.instance().pauseSlideShowAction().setEnabled(false);
+        SlideShowActionFactory.instance().resumeSlideShowAction().setEnabled(false);
+        SlideShowActionFactory.instance().stopSlideShowAction().setEnabled(false);
     }
 
 }

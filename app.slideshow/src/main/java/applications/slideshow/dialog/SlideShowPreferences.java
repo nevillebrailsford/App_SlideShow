@@ -1,7 +1,7 @@
 package applications.slideshow.dialog;
 
-import application.base.app.gui.PreferencesDialog;
 import application.inifile.IniFile;
+import application.preferences.PreferencesDialog;
 import java.io.File;
 import java.util.StringTokenizer;
 import javax.swing.JButton;

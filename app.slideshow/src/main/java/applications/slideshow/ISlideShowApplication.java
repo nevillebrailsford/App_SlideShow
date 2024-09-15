@@ -1,10 +1,8 @@
-package applications.slideshow.gui;
+package applications.slideshow;
 
-public interface IApplication {
+import application.base.app.IApplication;
 
-    void exitApplicationAction();
-
-    void preferencesAction();
+public interface ISlideShowApplication extends IApplication {
 
     void addSlideShowAction();
 
@@ -20,10 +18,6 @@ public interface IApplication {
 
     void stopSlideShowAction();
 
-    void redoAction();
-
-    void undoAction();
-
     void copyAction();
 
     void pasteAction();
@@ -32,5 +26,4 @@ public interface IApplication {
 
     void showEnding();
 
-    void helpAboutAction();
 }

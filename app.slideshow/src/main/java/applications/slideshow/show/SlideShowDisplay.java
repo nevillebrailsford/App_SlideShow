@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
-import applications.slideshow.gui.IApplication;
+import applications.slideshow.ISlideShowApplication;
 
 public class SlideShowDisplay extends GApplication {
     private static final int RESUME_BUTTON_WIDTH = 20;
@@ -42,10 +42,10 @@ public class SlideShowDisplay extends GApplication {
     int filesCount = 0;
     private Color stopButtonColor = UNSELECTED_BUTTON;
     private Color pauseButtonColor = UNSELECTED_BUTTON;
-    private IApplication application;
+    private ISlideShowApplication application;
 
     public SlideShowDisplay(File[] directories, String displaySeconds, String screenWidth, String screenHeight,
-            IApplication application) {
+            ISlideShowApplication application) {
         super();
         this.directories = directories;
         displaySlideForFrames = Integer.valueOf(displaySeconds) * FRAMES_PER_SECOND;
