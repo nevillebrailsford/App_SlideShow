@@ -11,7 +11,6 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeSelectionModel;
-import applications.slideshow.SlideShowApplication;
 import applications.slideshow.actions.SlideShowActionFactory;
 
 public class SlideShowTree extends JTree {
@@ -54,7 +53,7 @@ public class SlideShowTree extends JTree {
 
     private static ImageIcon createImageIcon(String path) {
         LOGGER.entering(CLASS_NAME, "createImageIcon", path);
-        java.net.URL imgURL = SlideShowApplication.class.getResource(path);
+        java.net.URL imgURL = SlideShowTree.class.getResource(path);
         if (imgURL != null) {
             ImageIcon result = new ImageIcon(imgURL);
             Image image = result.getImage();
