@@ -215,7 +215,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI
     @Override
     public void addSlideShowToAction() {
         LOGGER.entering(CLASS_NAME, "addSlideShowToAction");
-        TreePath selPath = tree.getPathForLocation(currentX, currentY);
+        TreePath selPath = tree.getSelectionPath();
         if (selPath == null) {
             LOGGER.exiting(CLASS_NAME, "addSlideShowToAction", selPath);
             return;

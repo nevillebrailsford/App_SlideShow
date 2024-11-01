@@ -1,12 +1,9 @@
 package applications.slideshow.gui;
 
 import application.definition.ApplicationConfiguration;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 import applications.slideshow.actions.SlideShowActionFactory;
 
 public class SlideShowPopup extends JPopupMenu {
@@ -26,13 +23,10 @@ public class SlideShowPopup extends JPopupMenu {
         addSeparator();
         JMenuItem copyItem = new JMenuItem(SlideShowActionFactory.instance().copyAction());
         add(copyItem);
-        copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
         JMenuItem pasteItem = new JMenuItem(SlideShowActionFactory.instance().pasteAction());
         add(pasteItem);
-        pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
         JMenuItem deleteItem = new JMenuItem(SlideShowActionFactory.instance().deleteAction());
         add(deleteItem);
-        deleteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
         LOGGER.exiting(CLASS_NAME, "init");
     }
 }
