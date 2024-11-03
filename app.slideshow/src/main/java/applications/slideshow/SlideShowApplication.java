@@ -18,6 +18,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
@@ -30,6 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
@@ -65,6 +68,12 @@ public class SlideShowApplication extends ApplicationBaseForGUI
     private SlideShowMenu menu = null;
 
     private SlideShowDisplay slideShowDisplay = null;
+
+    final String undoAction = "undoAction";
+    final String redoAction = "redoAction";
+    final String copyAction = "copyAction";
+    final String pasteAction = "pasteAction";
+    final String deleteAction = "deleteAction";
 
     public static String getHomeDirectory() {
         String home = IniFile.value(Constants.HOME_DIRECTORY);
@@ -404,6 +413,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI
                 currentY = e.getY();
             }
         });
+        setKeyBindings(tree);
         tree.clearSelection();
         return tree;
     }
@@ -430,6 +440,19 @@ public class SlideShowApplication extends ApplicationBaseForGUI
             result = Constants.DEFAULT_SCREEN_HEIGHT;
         }
         return result;
+    }
+
+    private void setKeyBindings(JTree tree) {
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK), undoAction);
+        tree.getActionMap().put(undoAction, SlideShowActionFactory.instance().undoAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK), redoAction);
+        tree.getActionMap().put(redoAction, SlideShowActionFactory.instance().redoAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK), copyAction);
+        tree.getActionMap().put(copyAction, SlideShowActionFactory.instance().copyAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK), pasteAction);
+        tree.getActionMap().put(pasteAction, SlideShowActionFactory.instance().pasteAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK), deleteAction);
+        tree.getActionMap().put(deleteAction, SlideShowActionFactory.instance().deleteAction());
     }
 
     // Tree selection listener
