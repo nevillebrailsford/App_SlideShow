@@ -25,6 +25,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.Optional;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -74,6 +75,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI
     final String copyAction = "copyAction";
     final String pasteAction = "pasteAction";
     final String deleteAction = "deleteAction";
+    final String startAction = "startAction";
 
     public static String getHomeDirectory() {
         String home = IniFile.value(Constants.HOME_DIRECTORY);
@@ -136,6 +138,7 @@ public class SlideShowApplication extends ApplicationBaseForGUI
                 "Application " + ApplicationConfiguration.applicationDefinition().applicationName() + " is starting");
         parent.setLayout(new BorderLayout());
         menu = new SlideShowMenu(this);
+        setActionKeyBindings();
         parent.setJMenuBar(menu);
         tree = createJTree();
         JScrollPane treeView = new JScrollPane();
@@ -453,6 +456,23 @@ public class SlideShowApplication extends ApplicationBaseForGUI
         tree.getActionMap().put(pasteAction, SlideShowActionFactory.instance().pasteAction());
         tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK), deleteAction);
         tree.getActionMap().put(deleteAction, SlideShowActionFactory.instance().deleteAction());
+        tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK), startAction);
+        tree.getActionMap().put(startAction, SlideShowActionFactory.instance().startSlideShowAction());
+    }
+
+    private void setActionKeyBindings() {
+        KeyStroke undo = KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK);
+        SlideShowActionFactory.instance().undoAction().putValue(Action.ACCELERATOR_KEY, undo);
+        KeyStroke redo = KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK);
+        SlideShowActionFactory.instance().redoAction().putValue(Action.ACCELERATOR_KEY, redo);
+        KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK);
+        SlideShowActionFactory.instance().copyAction().putValue(Action.ACCELERATOR_KEY, copy);
+        KeyStroke paste = KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK);
+        SlideShowActionFactory.instance().pasteAction().putValue(Action.ACCELERATOR_KEY, paste);
+        KeyStroke delete = KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK);
+        SlideShowActionFactory.instance().deleteAction().putValue(Action.ACCELERATOR_KEY, delete);
+        KeyStroke start = KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
+        SlideShowActionFactory.instance().startSlideShowAction().putValue(Action.ACCELERATOR_KEY, start);
     }
 
     // Tree selection listener
